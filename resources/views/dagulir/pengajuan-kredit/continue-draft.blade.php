@@ -158,7 +158,7 @@ $dataIndex = match ($skema) {
                                                     @if ($docNIB)
                                                         @if (temporary_dagulir($duTemp->id, $itemNIB->id)?->opsi_text != null)
                                                             <a class="text-theme-primary underline underline-offset-4 cursor-pointer open-modal btn-file-preview"
-                                                                data-title="{{ $itemNIB->nama }}" data-filepath="{{asset('../upload/temp')}}/{{temporary_dagulir($duTemp->id, $itemNIB->id)?->id_jawaban}}/{{temporary_dagulir($duTemp->id, $itemNIB->id)?->opsi_text}}" data-extension="{{ explode('.', temporary_dagulir($duTemp->id, $itemNIB->id)?->opsi_text)[1]) }}">Preview</a>
+                                                                data-title="{{ $itemNIB->nama }}" data-filepath="{{asset('../upload/temp')}}/{{temporary_dagulir($duTemp->id, $itemNIB->id)?->id_jawaban}}/{{temporary_dagulir($duTemp->id, $itemNIB->id)?->opsi_text}}" data-extension="{{ explode('.', temporary_dagulir($duTemp->id, $itemNIB->id)?->opsi_text)[1] }}">Preview</a>
                                                         @endif
                                                     @endif
                                                     <input type="hidden" name="id_item_file[{{ $itemNIB->id }}]" value="{{ $itemNIB->id }}"
