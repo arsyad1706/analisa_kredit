@@ -10,6 +10,8 @@
                 <th>Cabang</th>
                 <th>Aplikasi</th>
                 <th>Lama Login</th>
+                <th>IP</th>
+                <th>Perangkat</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -48,16 +50,16 @@
                             ->first();
                         $cabang = $dataCabang->cabang;
                     }
-                
+
                     // Waktu login pengguna
                     $startTime = new DateTime($item->created_at);
-                
+
                     // Waktu saat ini
                     $endTime = new DateTime('now');
-                
+
                     // Hitung perbedaan waktu
                     $interval = $endTime->diff($startTime);
-                
+
                     // Format waktu
                     $hours = $interval->h;
                     $minutes = $interval->i;
@@ -86,27 +88,29 @@
                                 let mm = parseInt(m);
                                 let ss = parseInt(s);
                                 ss++;
-                    
+
                                 if (ss > 59) {
                                     mm++;
                                     ss = 0;
                                 }
-                    
+
                                 if (mm > 59) {
                                     hh++;
                                     mm = 0;
                                 }
-                    
+
                                 hh = (hh < 10) ? "0" + hh : hh;
                                 mm = (mm < 10) ? "0" + mm : mm;
                                 ss = (ss < 10) ? "0" + ss : ss;
-                    
+
                                 let time = hh + ":" + mm + ":" + ss;
                                 document.querySelector(`.${widget_id}`).innerHTML = time;
-                                var t = setTimeout(function(){ currentTime(hh, mm, ss, `${widget_id}`) }, 1000); 
+                                var t = setTimeout(function(){ currentTime(hh, mm, ss, `${widget_id}`) }, 1000);
                             }
                         </script>
                     </td>
+                    <td>{{ $item->ip_address }}</td>
+                    <td>{{ $item->device_name }}</td>
                     <td><h5 class="badge badge-info">Aktif</h5></td>
                     <td>
                         <form action="{{ route('reset-api-session', $item->id) }}" method="post">

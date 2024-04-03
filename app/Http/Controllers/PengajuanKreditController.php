@@ -24,7 +24,12 @@ use App\Models\JawabanTemp;
 use App\Models\JawabanTempModel;
 use App\Models\LogPengajuan;
 use App\Models\MerkModel;
-use App\Models\PengajuanDagulir;
+use App\Models\MstItemPerhitunganKredit;
+use App\Models\MstProdukKredit;
+use App\Models\MstSkemaKredit;
+use App\Models\MstSkemaLimit;
+use App\Models\PerhitunganKredit;
+use App\Models\PeriodeAspekKeuangan;
 use App\Models\PlafonUsulan;
 use App\Models\TipeModel;
 use App\Models\User;
@@ -41,6 +46,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Image;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
+use Illuminate\Validation\Validator;
 use PhpParser\Node\Expr;
 use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 
@@ -258,6 +265,8 @@ class PengajuanKreditController extends Controller
      */
     public function index(Request $request)
     {
+        // $param['activeTab'] = $request->input('active_tab', 'home-tab');
+        // $page = $request->input('page', 1);
         $param['pageTitle'] = "Dashboard";
         $id_cabang = Auth::user()->id_cabang;
         $param['cabang'] = DB::table('cabang')
@@ -291,7 +300,6 @@ class PengajuanKreditController extends Controller
                 'pengajuan.average_by_penyelia',
                 'pengajuan.average_by_pbo',
                 'pengajuan.average_by_pbp',
-                'pengajuan.skema_kredit',
                 'pengajuan.sppk',
                 'pengajuan.po',
                 'pengajuan.pk',
@@ -360,7 +368,6 @@ class PengajuanKreditController extends Controller
                 'pengajuan.average_by_penyelia',
                 'pengajuan.average_by_pbo',
                 'pengajuan.average_by_pbp',
-                'pengajuan.skema_kredit',
                 'calon_nasabah.nama',
                 'calon_nasabah.jenis_usaha',
                 'calon_nasabah.id_pengajuan',
@@ -425,7 +432,6 @@ class PengajuanKreditController extends Controller
                 'pengajuan.average_by_penyelia',
                 'pengajuan.average_by_pbo',
                 'pengajuan.average_by_pbp',
-                'pengajuan.skema_kredit',
                 'calon_nasabah.nama',
                 'calon_nasabah.jenis_usaha',
                 'calon_nasabah.id_pengajuan',
@@ -486,7 +492,6 @@ class PengajuanKreditController extends Controller
                     'pengajuan.average_by_penyelia',
                     'pengajuan.average_by_pbo',
                     'pengajuan.average_by_pbp',
-                    'pengajuan.skema_kredit',
                     'calon_nasabah.nama',
                     'calon_nasabah.jenis_usaha',
                     'calon_nasabah.id_pengajuan'
@@ -542,7 +547,6 @@ class PengajuanKreditController extends Controller
                     'pengajuan.average_by_penyelia',
                     'pengajuan.average_by_pbo',
                     'pengajuan.average_by_pbp',
-                    'pengajuan.skema_kredit',
                     'calon_nasabah.nama',
                     'calon_nasabah.jenis_usaha',
                     'calon_nasabah.id_pengajuan'
@@ -596,7 +600,6 @@ class PengajuanKreditController extends Controller
                 'pengajuan.id_cabang',
                 'pengajuan.average_by_sistem',
                 'pengajuan.average_by_penyelia',
-                'pengajuan.skema_kredit',
                 'pengajuan.created_at',
                 'pengajuan.deleted_at',
                 'calon_nasabah.nama',
@@ -649,7 +652,6 @@ class PengajuanKreditController extends Controller
                 'pengajuan.id_cabang',
                 'pengajuan.average_by_sistem',
                 'pengajuan.average_by_penyelia',
-                'pengajuan.skema_kredit',
                 'pengajuan.created_at',
                 'pengajuan.deleted_at',
                 'calon_nasabah.nama',
@@ -694,6 +696,16 @@ class PengajuanKreditController extends Controller
                 $dataPengajuanSampah->where('pengajuan.id_cabang', $request->cbg);
             }
 
+            // if ($param['activeTab'] === 'home-tab') {
+            //     $param['data_pengajuan'] = $dataPengajuan->paginate(5, ['*'], 'page', $page)->withQueryString();
+            //     $param['sampah_pengajuan'] = $dataPengajuanSampah->paginate(5, ['*'], 'page', $page)->withQueryString();
+            // } elseif ($param['activeTab'] === 'profile-tab') {
+            //     $param['data_pengajuan'] = $dataPengajuan->paginate(5, ['*'], 'page', $page)->withQueryString();
+            //     $param['sampah_pengajuan'] = $dataPengajuanSampah->paginate(5, ['*'], 'page', $page)->withQueryString();
+            // } else {
+            //     $param['data_pengajuan'] = $dataPengajuan->paginate(5)->withQueryString();
+            //     $param['sampah_pengajuan'] = $dataPengajuanSampah->paginate(5)->withQueryString();
+            // }
             $param['data_pengajuan'] = $dataPengajuan->paginate(5)->withQueryString();
             $param['sampah_pengajuan'] = $dataPengajuanSampah->paginate(5)->withQueryString();
 
@@ -729,7 +741,19 @@ class PengajuanKreditController extends Controller
         $data['dataPertanyaanSatu'] = ItemModel::select('id', 'nama', 'level', 'id_parent')->where('level', 2)->where('id_parent', 3)->get();
         $param['dataMerk'] = MerkModel::all();
 
-        $param['skema'] = $request->skema;
+        $selectedProdukKredit = MstProdukKredit::select('id', 'name')->where('id', $request->produk)->first();
+        $param['skema_kredit'] = '';
+        if ($selectedProdukKredit)
+            $param['skema_kredit'] = $selectedProdukKredit->name;
+
+        $param['produk'] = $request->produk;
+        $param['skemaId'] = $request->skema;
+        $param['limit'] = $request->limit;
+        $param['produkKredit'] = MstProdukKredit::select('id', 'name')->get();
+        $param['skemaKredit'] = MstSkemaKredit::select('id', 'name')->get();
+        $param['limitKredit'] = MstSkemaLimit::select('id', 'from', 'to', 'operator')->get();
+        $param['skema'] = MstProdukKredit::find($param['produk'])->name ?? null;
+        $param['maxKredit'] = $request->limit ? MstSkemaLimit::where('id', $request->limit)->first() : null;
 
         $param['jenis_usaha'] = config('dagulir.jenis_usaha');
         $param['tipe'] = config('dagulir.tipe_pengajuan');
@@ -1048,176 +1072,6 @@ class PengajuanKreditController extends Controller
         return response()->json($dataDetailJawabanText);
     }
 
-    public function tesskor(Request $request)
-    {
-        $param['pageTitle'] = "Dashboard";
-        $param['multipleFiles'] = $this->isMultipleFiles;
-
-        $param['dataDesa'] = Desa::all();
-        $param['dataKecamatan'] = Kecamatan::all();
-        $param['dataKabupaten'] = Kabupaten::all();
-        $param['dataAspek'] = ItemModel::select('*')->where('level', 1)->where('nama', '!=', 'Data Umum')->get();
-        $param['itemSlik'] = ItemModel::with('option')->where('nama', 'SLIK')->first();
-        $param['itemSP'] = ItemModel::where('nama', 'Surat Permohonan')->first();
-        $param['itemP'] = ItemModel::where('nama', 'Laporan SLIK')->first();
-        $param['itemKTPSu'] = ItemModel::where('nama', 'Foto KTP Suami')->first();
-        $param['itemKTPIs'] = ItemModel::where('nama', 'Foto KTP Istri')->first();
-        $param['itemNIB'] = ItemModel::where('nama', 'Dokumen NIB')->first();
-        $param['itemNPWP'] = ItemModel::where('nama', 'Dokumen NPWP')->first();
-        $param['itemSKU'] = ItemModel::where('nama', 'Dokumen Surat Keterangan Usaha')->first();
-
-        $data['dataPertanyaanSatu'] = ItemModel::select('id', 'nama', 'level', 'id_parent')->where('level', 2)->where('id_parent', 3)->get();
-        $param['dataMerk'] = MerkModel::all();
-
-        $param['skema'] = $request->skema;
-
-        return view('pengajuan-kredit.tes-skor', $param);
-    }
-
-    function countScore(Request $request)
-    {
-        $mergedDataLevel = [];
-        // item level 2
-        $dataLev2 = $request->dataLevelDua;
-        // remove key 80, 86, 93 & 142 from array
-        unset($dataLev2[80]);
-        unset($dataLev2[86]);
-        // unset($dataLev2[93]);
-        // unset($dataLev2[142]);
-        // return $dataLev2;
-
-        // item level 3
-        $dataLev3 = $request->dataLevelTiga;
-        // remove key 121, 134 & 149 from array
-        // return $request;
-        unset($dataLev3[121]);
-        unset($dataLev3[134]);
-        unset($dataLev3[149]);
-
-        // item level 4
-        $dataLev4 = $request->dataLevelEmpat;
-        $mergedDataLevel = array_merge($dataLev2, $dataLev3, $dataLev4);
-
-        // sum score
-        // return $mergedDataLevel;
-        $totalScore = 0;
-        $totalDataNull = 0;
-        for ($i = 0; $i < count($mergedDataLevel); $i++) {
-            if ($mergedDataLevel[$i]) {
-                // jika data tersedia
-                $data = $this->getDataLevel($mergedDataLevel[$i]);
-                if (is_numeric($data[0]))
-                    $totalScore += $data[0];
-                else
-                    $totalDataNull++;
-            } else {
-                $totalDataNull++;
-            }
-        }
-
-        // find avg
-        return $mergedDataLevel;
-        $avgResult = round($totalScore / (count($mergedDataLevel) - $totalDataNull), 2);
-        return $avgResult;
-
-        $finalArray = array();
-        $rata_rata = array();
-        // data Level dua
-        if ($request->dataLevelDua != null) {
-            $data = $request->dataLevelDua;
-            $result_dua = array_values(array_filter($data));
-            foreach ($result_dua as $key => $value) {
-                $data_level_dua = $this->getDataLevel($value);
-                $skor[$key] = $data_level_dua[0];
-                $id_jawaban[$key] = $data_level_dua[1];
-                //jika skor nya tidak kosong
-                if ($skor[$key] != 'kosong') {
-                    if ($id_jawaban[$key] == 66 || $id_jawaban[$key] == 187) {
-                        if ($skor[$key] == 1) {
-                            $statusSlik = true;
-                        }
-                    }
-                    array_push($rata_rata, $skor[$key]);
-                } else {
-                    $skor[$key] = NULL;
-                }
-                array_push(
-                    $finalArray,
-                    array(
-                        'id_pengajuan' => 67,
-                        'id_jawaban' => $id_jawaban[$key],
-                        'skor' => $skor[$key],
-                        'created_at' => date("Y-m-d H:i:s"),
-                    )
-                );
-            }
-        } else {
-        }
-        // return array_values($request->dataLevelTiga)[0];
-        //     return $this->getDataLevel(array_values($request->dataLevelTiga)[0]);
-        // data level tiga
-        if ($request->dataLevelTiga != null) {
-            $data = $request->dataLevelTiga;
-            $result_tiga = array_values(array_filter($data));
-            foreach ($result_tiga as $key => $value) {
-                $data_level_tiga = $this->getDataLevel($value);
-                $skor[$key] = $data_level_tiga[0];
-                $id_jawaban[$key] = $data_level_tiga[1];
-                //jika skor nya tidak kosong
-                if ($skor[$key] != 'kosong') {
-                    array_push($rata_rata, $skor[$key]);
-                } else {
-                    $skor[$key] = NULL;
-                }
-                array_push(
-                    $finalArray,
-                    array(
-                        'id_pengajuan' => 67,
-                        'id_jawaban' => $id_jawaban[$key],
-                        'skor' => $skor[$key],
-                        'created_at' => date("Y-m-d H:i:s"),
-                    )
-                );
-            }
-        } else {
-        }
-
-        // data level empat
-        if ($request->dataLevelEmpat != null) {
-            $data = $request->dataLevelEmpat;
-            $result_empat = array_values(array_filter($data));
-            foreach ($result_empat as $key => $value) {
-                $data_level_empat = $this->getDataLevel($value);
-                $skor[$key] = $data_level_empat[0];
-                $id_jawaban[$key] = $data_level_empat[1];
-                //jika skor nya tidak kosong
-                if ($skor[$key] != 'kosong') {
-                    array_push($rata_rata, $skor[$key]);
-                } else {
-                    $skor[$key] = NULL;
-                }
-                array_push(
-                    $finalArray,
-                    array(
-                        'id_pengajuan' => 67,
-                        'id_jawaban' => $id_jawaban[$key],
-                        'skor' => $skor[$key],
-                        'created_at' => date("Y-m-d H:i:s"),
-                    )
-                );
-            }
-        } else {
-        }
-        $average = array_sum($rata_rata) / count($rata_rata);
-        $result = round($average, 2);
-        return [
-            'skor' => $rata_rata,
-            'final_array' => $finalArray,
-            'avg' => $average,
-            'result' => $result,
-        ];
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -1229,6 +1083,7 @@ class PengajuanKreditController extends Controller
         $statusSlik = false;
         $find = array('Rp ', '.', ',');
         $request->validate([
+            // 'upload_file.*' => 'file|max:5120',
             'name' => 'required',
             'no_telp' => 'required',
             'alamat_rumah' => 'required',
@@ -1261,6 +1116,9 @@ class PengajuanKreditController extends Controller
             $addPengajuan->id_cabang = auth()->user()->id_cabang;
             $addPengajuan->progress_pengajuan_data = $request->progress;
             $addPengajuan->skema_kredit = $request->skema_kredit;
+            $addPengajuan->produk_kredit_id = $request->produk_kredit_id;
+            $addPengajuan->skema_kredit_id = $request->skema_kredit_id;
+            $addPengajuan->skema_limit_id = $request->skema_limit_id ?? null;
             $addPengajuan->save();
             $id_pengajuan = $addPengajuan->id;
 
@@ -1552,6 +1410,13 @@ class PengajuanKreditController extends Controller
                 $addKomentar->id_staff = Auth::user()->id;
                 $addKomentar->save();
             }
+
+            // dd($request->id_nasabah);
+            PerhitunganKredit::where('temp_calon_nasabah_id', $tempNasabah->id)
+                ->update([
+                    'pengajuan_id' => $id_pengajuan,
+                    'temp_calon_nasabah_id' => null
+                ]);
 
             JawabanTemp::where('id_temporary_calon_nasabah', $tempNasabah->id)->delete();
             JawabanTempModel::where('id_temporary_calon_nasabah', $tempNasabah->id)->delete();
@@ -3046,6 +2911,33 @@ class PengajuanKreditController extends Controller
         } else {
             $log = [];
         }
+
+        $param['userLogStaff'] = DB::table('pengajuan')
+                    ->select('users.name', 'users.email', 'users.nip')
+                    ->join('users', 'pengajuan.id_staf', 'users.id')
+                    ->where('pengajuan.id', $id)
+                    ->first();
+        $param['userLogPenyelia'] = DB::table('pengajuan')
+                    ->select('users.name', 'users.email', 'users.nip')
+                    ->join('users', 'pengajuan.id_penyelia', 'users.id')
+                    ->where('pengajuan.id', $id)
+                    ->first();
+        $param['userLogPBO'] = DB::table('pengajuan')
+                    ->select('users.name', 'users.email', 'users.nip')
+                    ->join('users', 'pengajuan.id_pbo', 'users.id')
+                    ->where('pengajuan.id', $id)
+                    ->first();
+        $param['userLogPBP'] = DB::table('pengajuan')
+                    ->select('users.name', 'users.email', 'users.nip')
+                    ->join('users', 'pengajuan.id_pbp', 'users.id')
+                    ->where('pengajuan.id', $id)
+                    ->first();
+        $param['userLogPincab'] = DB::table('pengajuan')
+                    ->select('users.name', 'users.email', 'users.nip')
+                    ->join('users', 'pengajuan.id_pincab', 'users.id')
+                    ->where('pengajuan.id', $id)
+                    ->first();
+
         $param['logPengajuan'] = $log;
         $param['rolesPemroses'] = $this->repo->getDataPemroses($dataUmum);
         return view('pengajuan-kredit.detail-komentar-pengajuan', $param);
@@ -3743,12 +3635,22 @@ class PengajuanKreditController extends Controller
         // return $param['dataPO'];
 
         $param['skema'] = $request->skema ?? $param['duTemp']?->skema_kredit;
+        $produkKredit = DB::table('temporary_calon_nasabah')
+            ->where('id', $request->tempId)
+            ->first();
+        $param['produk'] = $produkKredit->produk_id ?? $request->produk;
+        $param['skemaId'] = $produkKredit->skema_kredit_id ?? $request->skema;
+        $param['limit'] = $produkKredit->skema_limit_id ?? $request->limit;
+        $param['produkKredit'] = MstProdukKredit::select('id', 'name')->get();
+        $param['skemaKredit'] = MstSkemaKredit::select('id', 'name')->get();
+        $param['limitKredit'] = MstSkemaLimit::select('id', 'from', 'to', 'operator')->get();
+        $param['maxKredit'] = $param['limit'] ? MstSkemaLimit::where('id', $param['limit'])->first() : null;
 
         // dump($param['dataAspek']);
         // dump($param['itemSlik']);
         // dump($param['itemSP']);
         // dump($param['dataPertanyaanSatu']);
-        // dd($param['itemP']);
+        // dd($param['duTemp']);
         return view('pengajuan-kredit.continue-draft', $param);
     }
 
@@ -3917,6 +3819,11 @@ class PengajuanKreditController extends Controller
                         mkdir($folderPK, 0755, true);
                     }
                     $filePK->move($folderPK, $filenamePK);
+                    DB::table('log_cetak')
+                        ->where('id_pengajuan', $id)
+                        ->update([
+                            'no_pk' => $noPK
+                        ]);
                     DB::table('pengajuan')
                         ->where('id', $id)
                         ->update([
@@ -4079,5 +3986,729 @@ class PengajuanKreditController extends Controller
             DB::rollBack();
             return redirect()->back()->withError('Terjadi kesalahan. ' . $e->getMessage());
         }
+    }
+
+    public function getSkemaKredit(Request $request){
+        $produkId = $request->get('produkId');
+        $produk = MstProdukKredit::find($produkId);
+
+        if($produk->name == 'KKB' || $produk->name == 'Talangan Umroh'){
+            // return $produk;
+            $data = MstSkemaKredit::where('name', "like", '%konsumtif%')
+                ->get();
+        } else {
+            $data = MstSkemaKredit::where('name', "like", '%modal kerja%')
+                ->orWhere('name', "like", '%investasi%')
+                ->get();
+        }
+
+        return response()->json($data);
+    }
+
+    public function getSkemaLimit(Request $request){
+        $skemaId = $request->get('skemaId');
+        $skema = MstSkemaKredit::find($skemaId);
+
+        if($skema->name != 'Konsumtif'){
+            $data = MstSkemaLimit::where('skema_kredit_id', $skemaId)
+                ->get();
+        } else {
+            $data = null;
+        }
+
+        return response()->json($data);
+    }
+
+    public function saveDataPerhitunganTemp(Request $request){
+        $idCalonNasabah = $request->idCalonNasabah;
+        $levelTiga = [];
+        $levelEmpat = [];
+        $parentLevelTiga = [];
+
+        DB::beginTransaction();
+        try{
+            if(PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)->count() < 1){
+                // Data Level Tiga
+                foreach($request->inpLevelTiga as $key => $item){
+                    array_push($levelTiga, [
+                        'nominal' => str_replace('.', '', str_replace(['(', ')'], '-', $item)),
+                        'item_perhitungan_kredit_id' => $key,
+                        'temp_calon_nasabah_id' => $idCalonNasabah,
+                        'created_at' => now()
+                    ]);
+                }
+
+                foreach($request->inpLevelTigaParent as $key => $item){
+                    array_push($parentLevelTiga, [
+                        'nominal' => $key != 68 ? str_replace('.', '', str_replace(['(', ')'], '-', $item)) : $item,
+                        'item_perhitungan_kredit_id' => $key,
+                        'temp_calon_nasabah_id' => $idCalonNasabah,
+                        'created_at' => now()
+                    ]);
+                }
+
+                // Data Level Empat
+                $bakiDebetId = $request->inpLevelEmpatId[0];
+                $plafonId =  $request->inpLevelEmpatId[1];
+                $tenorId =  $request->inpLevelEmpatId[2];
+                $angsuranId =  $request->inpLevelEmpatId[3];
+                $bakiDebet = [];
+                $plafon = [];
+                $tenor = [];
+                $angsuran = [];
+                $bakiDebet_ = '';
+                $plafon_ = '';
+                $tenor_ = '';
+                $angsuran_ = '';
+
+                foreach($request->inpLevelEmpat as $key => $item){
+                    if($request->inpLevelEmpatId[$key] == $bakiDebetId){
+                        array_push($bakiDebet, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $plafonId){
+                        array_push($plafon, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $tenorId){
+                        array_push($tenor, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $angsuranId){
+                        array_push($angsuran, strval(str_replace('.', '', $item)));
+                    }
+                }
+
+                for($i = 0; $i < count($bakiDebet); $i++){
+                    if($i == 0){
+                        if(count($bakiDebet) > 1){
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ',';
+                        } else{
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ']';
+                        }
+                    } else if($i == count($bakiDebet) -1){
+                        $_bakiDebet = $bakiDebet[$i] . ']';
+                    } else{
+                        $_bakiDebet = $bakiDebet[$i] . ',';
+                    }
+                    $bakiDebet_ .= $_bakiDebet;
+                }
+                for($i = 0; $i < count($plafon); $i++){
+                    if($i == 0){
+                        if(count($plafon) > 1){
+                            $_plafon = '[' . $plafon[$i] . ',';
+                        } else{
+                            $_plafon = '[' . $plafon[$i] . ']';
+                        }
+                    } else if($i == count($plafon) -1){
+                        $_plafon = $plafon[$i] . ']';
+                    } else{
+                        $_plafon = $plafon[$i] . ',';
+                    }
+                    $plafon_ .= $_plafon;
+                }
+                for($i = 0; $i < count($tenor); $i++){
+                    if($i == 0){
+                        if(count($tenor) > 1){
+                            $_tenor = '[' . $tenor[$i] . ',';
+                        } else{
+                            $_tenor = '[' . $tenor[$i] . ']';
+                        }
+                    } else if($i == count($tenor) -1){
+                        $_tenor = $tenor[$i] . ']';
+                    } else{
+                        $_tenor = $tenor[$i] . ',';
+                    }
+                    $tenor_ .= $_tenor;
+                }
+                for($i = 0; $i < count($angsuran); $i++){
+                    if($i == 0){
+                        if(count($angsuran) > 1){
+                            $_angsuran = '[' . $angsuran[$i] . ',';
+                        } else{
+                            $_angsuran = '[' . $angsuran[$i] . ']';
+                        }
+                    } else if($i == count($angsuran) -1){
+                        $_angsuran = $angsuran[$i] . ']';
+                    } else{
+                        $_angsuran = $angsuran[$i] . ',';
+                    }
+                    $angsuran_ .= $_angsuran;
+                }
+
+                array_push($levelEmpat, [
+                    'array_value' => $bakiDebet_,
+                    'item_perhitungan_kredit_id' => $bakiDebetId,
+                    'temp_calon_nasabah_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $plafon_,
+                    'item_perhitungan_kredit_id' => $plafonId,
+                    'temp_calon_nasabah_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $tenor_,
+                    'item_perhitungan_kredit_id' => $tenorId,
+                    'temp_calon_nasabah_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $angsuran_,
+                    'item_perhitungan_kredit_id' => $angsuranId,
+                    'temp_calon_nasabah_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+
+                PerhitunganKredit::insert($levelEmpat);
+                PerhitunganKredit::insert($levelTiga);
+                PerhitunganKredit::insert($parentLevelTiga);
+                DB::commit();
+
+                $idTerakhir = DB::table('perhitungan_kredit')->latest('id')->first()->id;
+
+                return response()->json([
+                    'message' => 'Berhasil menambahkan perhitungan kredit.',
+                    'request' => $request->all(),
+                    'lastId' => $idTerakhir,
+                ]);
+            } else{
+                // Data Level Tiga
+                foreach($request->inpLevelTiga as $key => $item){
+                    PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)
+                        ->where('item_perhitungan_kredit_id', $key)
+                        ->update([
+                            'nominal' => str_replace('.', '', str_replace(['(', ')'], '-', $item)),
+                            'updated_at' => now()
+                        ]);
+                }
+                foreach($request->inpLevelTigaParent as $key => $item){
+                    PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)
+                        ->where('item_perhitungan_kredit_id', $key)
+                        ->update([
+                            'nominal' =>$key != 68 ? str_replace('.', '', str_replace(['(', ')'], '-', $item)) : $item,
+                            'updated_at' => now()
+                        ]);
+                }
+
+                // Data Level Empat
+                $bakiDebetId = $request->inpLevelEmpatId[0];
+                $plafonId =  $request->inpLevelEmpatId[1];
+                $tenorId =  $request->inpLevelEmpatId[2];
+                $bakiDebet = [];
+                $plafon = [];
+                $tenor = [];
+                $bakiDebet_ = '';
+                $plafon_ = '';
+                $tenor_ = '';
+
+                foreach($request->inpLevelEmpat as $key => $item){
+                    if($request->inpLevelEmpatId[$key] == $bakiDebetId){
+                        array_push($bakiDebet, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $plafonId){
+                        array_push($plafon, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $tenorId){
+                        array_push($tenor, strval(str_replace('.', '', $item)));
+                    }
+                }
+
+                for($i = 0; $i < count($bakiDebet); $i++){
+                    if($i == 0){
+                        if(count($bakiDebet) > 1){
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ',';
+                        } else{
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ']';
+                        }
+                    } else if($i == count($bakiDebet) -1){
+                        $_bakiDebet = $bakiDebet[$i] . ']';
+                    } else{
+                        $_bakiDebet = $bakiDebet[$i] . ',';
+                    }
+                    $bakiDebet_ .= $_bakiDebet;
+                }
+                for($i = 0; $i < count($plafon); $i++){
+                    if($i == 0){
+                        if(count($plafon) > 1){
+                            $_plafon = '[' . $plafon[$i] . ',';
+                        } else{
+                            $_plafon = '[' . $plafon[$i] . ']';
+                        }
+                    } else if($i == count($plafon) -1){
+                        $_plafon = $plafon[$i] . ']';
+                    } else{
+                        $_plafon = $plafon[$i] . ',';
+                    }
+                    $plafon_ .= $_plafon;
+                }
+                for($i = 0; $i < count($tenor); $i++){
+                    if($i == 0){
+                        if(count($tenor) > 1){
+                            $_tenor = '[' . $tenor[$i] . ',';
+                        } else{
+                            $_tenor = '[' . $tenor[$i] . ']';
+                        }
+                    } else if($i == count($tenor) -1){
+                        $_tenor = $tenor[$i] . ']';
+                    } else{
+                        $_tenor = $tenor[$i] . ',';
+                    }
+                    $tenor_ .= $_tenor;
+                }
+
+                PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $bakiDebetId)
+                    ->update([
+                        'array_value' => $bakiDebet_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+                PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $plafonId)
+                    ->update([
+                        'array_value' => $plafon_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+                PerhitunganKredit::where('temp_calon_nasabah_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $tenorId)
+                    ->update([
+                        'array_value' => $tenor_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+
+                DB::commit();
+                return response()->json([
+                    'message' => 'Berhasil mengubah data.',
+                    'request' => $request->all()
+                ]);
+            }
+        } catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Terjadi kesalahan. ' . $e
+            ]);
+        } catch(QueryException $e){
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Terjadi kesalahan. ' . $e
+            ]);
+        }
+    }
+
+    function editPerhitunganKredit(Request $request) {
+        $idCalonNasabah = $request->idNasabah;
+        $levelTiga = [];
+        $levelEmpat = [];
+        $parentLevelTiga = [];
+
+        DB::beginTransaction();
+        try{
+            if(PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)->count() < 1){
+                // Data Level Tiga
+                foreach($request->inpLevelTiga as $key => $item){
+                    array_push($levelTiga, [
+                        'nominal' => str_replace('.', '', str_replace(['(', ')'], '-', $item)),
+                        'item_perhitungan_kredit_id' => $key,
+                        'pengajuan_id' => $idCalonNasabah,
+                        'created_at' => now()
+                    ]);
+                }
+
+                foreach($request->inpLevelTigaParent as $key => $item){
+                    array_push($parentLevelTiga, [
+                        'nominal' => $key != 68 ? str_replace('.', '', str_replace(['(', ')'], '-', $item)) : $item,
+                        'item_perhitungan_kredit_id' => $key,
+                        'pengajuan_id' => $idCalonNasabah,
+                        'created_at' => now()
+                    ]);
+                }
+
+                // Data Level Empat
+                $bakiDebetId = $request->inpLevelEmpatId[0];
+                $plafonId =  $request->inpLevelEmpatId[1];
+                $tenorId =  $request->inpLevelEmpatId[2];
+                $angsuranId =  $request->inpLevelEmpatId[3];
+                $bakiDebet = [];
+                $plafon = [];
+                $tenor = [];
+                $angsuran = [];
+                $bakiDebet_ = '';
+                $plafon_ = '';
+                $tenor_ = '';
+                $angsuran_ = '';
+
+                foreach($request->inpLevelEmpat as $key => $item){
+                    if($request->inpLevelEmpatId[$key] == $bakiDebetId){
+                        array_push($bakiDebet, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $plafonId){
+                        array_push($plafon, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $tenorId){
+                        array_push($tenor, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $angsuranId){
+                        array_push($angsuran, strval(str_replace('.', '', $item)));
+                    }
+                }
+
+                for($i = 0; $i < count($bakiDebet); $i++){
+                    if($i == 0){
+                        if(count($bakiDebet) > 1){
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ',';
+                        } else{
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ']';
+                        }
+                    } else if($i == count($bakiDebet) -1){
+                        $_bakiDebet = $bakiDebet[$i] . ']';
+                    } else{
+                        $_bakiDebet = $bakiDebet[$i] . ',';
+                    }
+                    $bakiDebet_ .= $_bakiDebet;
+                }
+                for($i = 0; $i < count($plafon); $i++){
+                    if($i == 0){
+                        if(count($plafon) > 1){
+                            $_plafon = '[' . $plafon[$i] . ',';
+                        } else{
+                            $_plafon = '[' . $plafon[$i] . ']';
+                        }
+                    } else if($i == count($plafon) -1){
+                        $_plafon = $plafon[$i] . ']';
+                    } else{
+                        $_plafon = $plafon[$i] . ',';
+                    }
+                    $plafon_ .= $_plafon;
+                }
+                for($i = 0; $i < count($tenor); $i++){
+                    if($i == 0){
+                        if(count($tenor) > 1){
+                            $_tenor = '[' . $tenor[$i] . ',';
+                        } else{
+                            $_tenor = '[' . $tenor[$i] . ']';
+                        }
+                    } else if($i == count($tenor) -1){
+                        $_tenor = $tenor[$i] . ']';
+                    } else{
+                        $_tenor = $tenor[$i] . ',';
+                    }
+                    $tenor_ .= $_tenor;
+                }
+                for($i = 0; $i < count($angsuran); $i++){
+                    if($i == 0){
+                        if(count($angsuran) > 1){
+                            $_angsuran = '[' . $angsuran[$i] . ',';
+                        } else{
+                            $_angsuran = '[' . $angsuran[$i] . ']';
+                        }
+                    } else if($i == count($angsuran) -1){
+                        $_angsuran = $angsuran[$i] . ']';
+                    } else{
+                        $_angsuran = $angsuran[$i] . ',';
+                    }
+                    $angsuran_ .= $_angsuran;
+                }
+
+                array_push($levelEmpat, [
+                    'array_value' => $bakiDebet_,
+                    'item_perhitungan_kredit_id' => $bakiDebetId,
+                    'pengajuan_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $plafon_,
+                    'item_perhitungan_kredit_id' => $plafonId,
+                    'pengajuan_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $tenor_,
+                    'item_perhitungan_kredit_id' => $tenorId,
+                    'pengajuan_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+                array_push($levelEmpat, [
+                    'array_value' => $angsuran_,
+                    'item_perhitungan_kredit_id' => $angsuranId,
+                    'pengajuan_id' => $idCalonNasabah,
+                    'created_at' => now()
+                ]);
+
+                PerhitunganKredit::insert($levelEmpat);
+                PerhitunganKredit::insert($levelTiga);
+                PerhitunganKredit::insert($parentLevelTiga);
+                DB::commit();
+
+                $idTerakhir = DB::table('perhitungan_kredit')->latest('id')->first()->id;
+
+                return response()->json([
+                    'message' => 'Berhasil menambahkan perhitungan kredit.',
+                    'request' => $request->all(),
+                    'lastId' => $idTerakhir,
+                ]);
+            } else{
+                // Data Level Tiga
+                foreach($request->inpLevelTiga as $key => $item){
+                    PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)
+                        ->where('item_perhitungan_kredit_id', $key)
+                        ->update([
+                            'nominal' => str_replace('.', '', str_replace(['(', ')'], '-', $item)),
+                            'updated_at' => now()
+                        ]);
+                }
+                foreach($request->inpLevelTigaParent as $key => $item){
+                    PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)
+                        ->where('item_perhitungan_kredit_id', $key)
+                        ->update([
+                            'nominal' =>$key != 68 ? str_replace('.', '', str_replace(['(', ')'], '-', $item)) : $item,
+                            'updated_at' => now()
+                        ]);
+                }
+
+                // Data Level Empat
+                $bakiDebetId = $request->inpLevelEmpatId[0];
+                $plafonId =  $request->inpLevelEmpatId[1];
+                $tenorId =  $request->inpLevelEmpatId[2];
+                $bakiDebet = [];
+                $plafon = [];
+                $tenor = [];
+                $bakiDebet_ = '';
+                $plafon_ = '';
+                $tenor_ = '';
+
+                foreach($request->inpLevelEmpat as $key => $item){
+                    if($request->inpLevelEmpatId[$key] == $bakiDebetId){
+                        array_push($bakiDebet, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $plafonId){
+                        array_push($plafon, strval(str_replace('.', '', $item)));
+                    }
+                    if($request->inpLevelEmpatId[$key] == $tenorId){
+                        array_push($tenor, strval(str_replace('.', '', $item)));
+                    }
+                }
+
+                for($i = 0; $i < count($bakiDebet); $i++){
+                    if($i == 0){
+                        if(count($bakiDebet) > 1){
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ',';
+                        } else{
+                            $_bakiDebet = '[' . $bakiDebet[$i] . ']';
+                        }
+                    } else if($i == count($bakiDebet) -1){
+                        $_bakiDebet = $bakiDebet[$i] . ']';
+                    } else{
+                        $_bakiDebet = $bakiDebet[$i] . ',';
+                    }
+                    $bakiDebet_ .= $_bakiDebet;
+                }
+                for($i = 0; $i < count($plafon); $i++){
+                    if($i == 0){
+                        if(count($plafon) > 1){
+                            $_plafon = '[' . $plafon[$i] . ',';
+                        } else{
+                            $_plafon = '[' . $plafon[$i] . ']';
+                        }
+                    } else if($i == count($plafon) -1){
+                        $_plafon = $plafon[$i] . ']';
+                    } else{
+                        $_plafon = $plafon[$i] . ',';
+                    }
+                    $plafon_ .= $_plafon;
+                }
+                for($i = 0; $i < count($tenor); $i++){
+                    if($i == 0){
+                        if(count($tenor) > 1){
+                            $_tenor = '[' . $tenor[$i] . ',';
+                        } else{
+                            $_tenor = '[' . $tenor[$i] . ']';
+                        }
+                    } else if($i == count($tenor) -1){
+                        $_tenor = $tenor[$i] . ']';
+                    } else{
+                        $_tenor = $tenor[$i] . ',';
+                    }
+                    $tenor_ .= $_tenor;
+                }
+
+                PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $bakiDebetId)
+                    ->update([
+                        'array_value' => $bakiDebet_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+                PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $plafonId)
+                    ->update([
+                        'array_value' => $plafon_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+                PerhitunganKredit::where('pengajuan_id', $idCalonNasabah)
+                    ->where('item_perhitungan_kredit_id', $tenorId)
+                    ->update([
+                        'array_value' => $tenor_,
+                        'nominal' => null,
+                        'updated_at' => now()
+                    ]);
+
+                DB::commit();
+                return response()->json([
+                    'message' => 'Berhasil mengubah data.',
+                    'request' => $request->all()
+                ]);
+            }
+        } catch(Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Terjadi kesalahan. ' . $e
+            ]);
+        } catch(QueryException $e){
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Terjadi kesalahan. ' . $e
+            ]);
+        }
+    }
+
+    public function getPerhitunganKreditLev1(){
+        $data = \App\Models\MstItemPerhitunganKredit::where('skema_kredit_limit_id', 1)->where('level', 1)->get();
+        return response()->json(['result' => $data]);
+    }
+
+    public function getPerhitunganKreditLev2(Request $request){
+        $parent_id = $request->parent_id;
+        $data = \App\Models\MstItemPerhitunganKredit::where('skema_kredit_limit_id', 1)
+                                                                    ->where('level', 2)
+                                                                    ->where('parent_id', $parent_id)
+                                                                    ->get();
+        return response()->json(['result' => $data]);
+    }
+
+    public function getDataPerhitunganKreditLev3(Request $request){
+        $perhitunganKreditLev3 = \App\Models\PerhitunganKredit::rightJoin('mst_item_perhitungan_kredit', 'perhitungan_kredit.item_perhitungan_kredit_id', '=', 'mst_item_perhitungan_kredit.id')
+                                            ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', 1)
+                                            ->where('mst_item_perhitungan_kredit.level', 3)
+                                            ->where('mst_item_perhitungan_kredit.parent_id', $request->parent_id)
+                                            ->where('perhitungan_kredit.temp_calon_nasabah_id', $request->id_nasabah)
+                                            ->get();
+        return response()->json(['result' => $perhitunganKreditLev3]);
+    }
+
+    public function getDataPerhitunganKreditLev3Edit(Request $request){
+        $perhitunganKreditLev3 = \App\Models\PerhitunganKredit::rightJoin('mst_item_perhitungan_kredit', 'perhitungan_kredit.item_perhitungan_kredit_id', '=', 'mst_item_perhitungan_kredit.id')
+                                            ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', 1)
+                                            ->where('mst_item_perhitungan_kredit.level', 3)
+                                            ->where('mst_item_perhitungan_kredit.parent_id', $request->parent_id)
+                                            ->where('perhitungan_kredit.pengajuan_id', $request->id_nasabah)
+                                            ->get();
+        return response()->json(['result' => $perhitunganKreditLev3]);
+    }
+
+    public function getDataPerhitunganKreditLev3NoParent($idClnNasabah){
+        $data = \App\Models\MstItemPerhitunganKredit::leftJoin('perhitungan_kredit', function($join) use ($idClnNasabah) {
+            $join->on('mst_item_perhitungan_kredit.id', '=', 'perhitungan_kredit.item_perhitungan_kredit_id')
+                ->where('perhitungan_kredit.temp_calon_nasabah_id', '=', $idClnNasabah);
+        })
+        ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', '=', 1)
+        ->where('mst_item_perhitungan_kredit.level', '=', 3)
+        ->whereNull('mst_item_perhitungan_kredit.parent_id')
+        // ->whereNull('perhitungan_kredit.temp_calon_nasabah_id')
+        ->get();
+
+        return response()->json(['result'=> $data]);
+    }
+
+    public function getDataPerhitunganKreditLev3NoParentEdit($idClnNasabah){
+        $data = \App\Models\MstItemPerhitunganKredit::leftJoin('perhitungan_kredit', function($join) use ($idClnNasabah) {
+            $join->on('mst_item_perhitungan_kredit.id', '=', 'perhitungan_kredit.item_perhitungan_kredit_id')
+                ->where('perhitungan_kredit.pengajuan_id', '=', $idClnNasabah);
+        })
+        ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', '=', 1)
+        ->where('mst_item_perhitungan_kredit.level', '=', 3)
+        ->whereNull('mst_item_perhitungan_kredit.parent_id')
+        // ->whereNull('perhitungan_kredit.temp_calon_nasabah_id')
+        ->get();
+
+        return response()->json(['result'=> $data]);
+    }
+
+    public function getDataPerhitunganKreditLev2NoParent(){
+        $data = \App\Models\MstItemPerhitunganKredit::where('skema_kredit_limit_id', 1)
+                                                                ->where('level', 2)
+                                                                ->whereNull('parent_id')
+                                                                ->get();
+        return response()->json(['result'=> $data]);
+    }
+
+    public function getDataPerhitunganKreditLev3NoParent2(Request $request) {
+        $perhitunganKreditLev3 = \App\Models\PerhitunganKredit::rightJoin('mst_item_perhitungan_kredit', 'perhitungan_kredit.item_perhitungan_kredit_id', '=', 'mst_item_perhitungan_kredit.id')
+                                            ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', 1)
+                                            ->where('mst_item_perhitungan_kredit.level', 3)
+                                            ->where('mst_item_perhitungan_kredit.parent_id', $request->parent_id)
+                                            ->where('perhitungan_kredit.temp_calon_nasabah_id', $request->id_nasabah)
+                                            ->get();
+        return response()->json(['result' => $perhitunganKreditLev3]);
+    }
+
+    public function getDataPerhitunganKreditLev3NoParent2Edit(Request $request) {
+        $perhitunganKreditLev3 = \App\Models\PerhitunganKredit::rightJoin('mst_item_perhitungan_kredit', 'perhitungan_kredit.item_perhitungan_kredit_id', '=', 'mst_item_perhitungan_kredit.id')
+                                            ->where('mst_item_perhitungan_kredit.skema_kredit_limit_id', 1)
+                                            ->where('mst_item_perhitungan_kredit.level', 3)
+                                            ->where('mst_item_perhitungan_kredit.parent_id', $request->parent_id)
+                                            ->where('perhitungan_kredit.pengajuan_id', $request->id_nasabah)
+                                            ->get();
+        return response()->json(['result' => $perhitunganKreditLev3]);
+    }
+
+    public function saveDataPeriodeAspekKeuangan(Request $request) {
+        $data = [
+            'perhitungan_kredit_id' => $request->perhitungan_kredit_id,
+            'bulan' => $request->bulan,
+            'tahun' => $request->tahun,
+        ];
+        PeriodeAspekKeuangan::create($data);
+        $idTerakhir = DB::table('periode_aspek_keuangan')->latest('id')->first()->id;
+        return response()->json([
+            'success' => 'Data Berhasil di Simpan',
+            'result' => $data,
+            'lastId' => $idTerakhir,
+        ]);
+    }
+
+    public function updateDataPeriodeAspekKeuangan(Request $request) {
+        $id = $request->id;
+        $data = [
+            'perhitungan_kredit_id' => $request->perhitungan_kredit_id,
+            'bulan' => $request->bulan,
+            'tahun' => $request->tahun,
+        ];
+        PeriodeAspekKeuangan::where('id', $id)->update($data);
+        return response()->json([
+            'success' => 'Data Berhasil di Update',
+            'result' => $data,
+        ]);
+    }
+
+    public function getPeriodeAspekKeuanganEdit(Request $request) {
+        $pengajuan_id = $request->pengajuan_id;
+        $getPeriode = \App\Models\PeriodeAspekKeuangan::join('perhitungan_kredit', 'periode_aspek_keuangan.perhitungan_kredit_id', '=', 'perhitungan_kredit.id')
+                                            ->where('perhitungan_kredit.pengajuan_id', $pengajuan_id)
+                                            ->select('periode_aspek_keuangan.id','periode_aspek_keuangan.perhitungan_kredit_id',
+                                            'periode_aspek_keuangan.bulan','periode_aspek_keuangan.tahun')
+                                            ->get();
+        return response()->json(['result' => $getPeriode]);
+    }
+
+    public function getPeriodeAspekKeuanganDraft(Request $request) {
+        $calon_nasabah_id = $request->calon_nasabah_id;
+        $getPeriode = \App\Models\PeriodeAspekKeuangan::join('perhitungan_kredit', 'periode_aspek_keuangan.perhitungan_kredit_id', '=', 'perhitungan_kredit.id')
+                                            ->where('perhitungan_kredit.temp_calon_nasabah_id', $calon_nasabah_id)
+                                            ->select('periode_aspek_keuangan.id','periode_aspek_keuangan.perhitungan_kredit_id',
+                                            'periode_aspek_keuangan.bulan','periode_aspek_keuangan.tahun')
+                                            ->get();
+        return response()->json(['result' => $getPeriode]);
     }
 }

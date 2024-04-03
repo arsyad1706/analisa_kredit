@@ -612,15 +612,17 @@ $dataIndex = match ($skema) {
                                                                         <input type="hidden" name="opsi_jawaban[{{ $itemEmpat->id }}]"
                                                                             value="{{ $itemEmpat->opsi_jawaban }}" id="">
                                                                         @if ($itemEmpat->nama == 'Masa Berlaku Asuransi Penjaminan')
-                                                                            <div class="input-group">
-                                                                                <input type="text" maxlength="255"
-                                                                                    name="informasi[{{ $itemEmpat->id }}]"
-                                                                                    id="{{ $idLevelEmpat == 'nilai_asuransi_penjaminan_/_ht' ? '' : $idLevelEmpat }}"
-                                                                                    placeholder="Masukkan informasi"
-                                                                                    class="form-input only-number"
-                                                                                    >
-                                                                                <div class="input-group-append">
-                                                                                    <div class="input-group-text" id="addon_tenor_yang_diminta">
+                                                                            <div class="flex items-center input-group">
+                                                                                <div class="flex-1">
+                                                                                    <input type="text" maxlength="255"
+                                                                                        name="informasi[{{ $itemEmpat->id }}]"
+                                                                                        id="{{ $idLevelEmpat == 'nilai_asuransi_penjaminan_/_ht' ? '' : $idLevelEmpat }}"
+                                                                                        placeholder="Masukkan informasi"
+                                                                                        class="form-input only-number"
+                                                                                        >
+                                                                                </div>
+                                                                                <div class="flex-shrink-0 mt-2.5rem input-group-append">
+                                                                                    <div class="form-input bg-gray-100 input-group-text" id="addon_tenor_yang_diminta">
                                                                                         Bulan</div>
                                                                                 </div>
                                                                             </div>

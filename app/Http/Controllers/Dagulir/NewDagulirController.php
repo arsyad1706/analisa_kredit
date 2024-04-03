@@ -31,6 +31,7 @@ use App\Models\MasterDDLoan;
 use App\Models\MerkModel;
 use App\Models\PengajuanDagulir;
 use App\Models\PengajuanDagulirTemp;
+use App\Models\PerhitunganKredit;
 use App\Models\PlafonUsulan;
 use App\Models\TipeModel;
 use App\Models\User;
@@ -759,10 +760,17 @@ class NewDagulirController extends Controller
             $namaNasabah = $request->skema_kredit == 'Dagulir' ? $pengajuan->nama : CalonNasabah::find($addData->id)->nama;
             // Delete data Draft
             if ($request->skema_kredit == 'Dagulir') {
+                DB::commit();
                 JawabanTemp::where('temporary_dagulir_id', $request->id_dagulir_temp)->delete();
                 JawabanTempModel::where('temporary_dagulir_id', $request->id_dagulir_temp)->delete();
                 PengajuanDagulirTemp::where('id', $request->id_dagulir_temp)->delete();
             } else {
+                DB::commit();
+                PerhitunganKredit::where('temp_calon_nasabah_id', $request->id_dagulir_temp)
+                ->update([
+                    'pengajuan_id' => $id_pengajuan,
+                    'temp_calon_nasabah_id' => null
+                ]);
                 JawabanTemp::where('id_temporary_calon_nasabah', $request->id_dagulir_temp)->delete();
                 JawabanTempModel::where('id_temporary_calon_nasabah', $request->id_dagulir_temp)->delete();
                 CalonNasabahTemp::find($request->id_dagulir_temp)->delete();
@@ -2258,11 +2266,11 @@ class NewDagulirController extends Controller
 
 
     function CetakPK($id) {
-        $count = DB::table('log_cetak_kkb')
+        $count = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->count('tgl_cetak_pk');
         if ($count < 1) {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->where('id_pengajuan', $id)
             ->update([
                 'tgl_cetak_pk' => now()
@@ -2303,7 +2311,7 @@ class NewDagulirController extends Controller
             ->first();
 
 
-        $param['tglCetak'] = DB::table('log_cetak_kkb')
+        $param['tglCetak'] = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->first();
 
@@ -2329,17 +2337,17 @@ class NewDagulirController extends Controller
     }
     public function cetakSPPk($id)
     {
-        $count = DB::table('log_cetak_kkb')
+        $count = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
             ->count('*');
         if ($count < 1) {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->insert([
                 'id_pengajuan' => $id,
                 'tgl_cetak_sppk' => now()
             ]);
         } else {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->where('id_pengajuan', $id)
                 ->update([
                     'tgl_cetak_sppk' => now()
@@ -2385,7 +2393,7 @@ class NewDagulirController extends Controller
         ->where('id', $dataUmum->id_cabang)
         ->first();
 
-        $tglCetak = DB::table('log_cetak_kkb')
+        $tglCetak = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->first();
         $param['tglCetak'] = $tglCetak;
@@ -2572,7 +2580,7 @@ class NewDagulirController extends Controller
                     }
                     $filePK->move($folderPK, $filenamePK);
 
-                    DB::table('log_cetak_kkb')
+                    DB::table('log_cetak')
                     ->where('id_pengajuan', $id)
                     ->update([
                         'no_pk' => $request->get('no_pk'),

@@ -9,6 +9,8 @@
                 <th>Role</th>
                 <th>Cabang</th>
                 <th>Lama Login</th>
+                <th>IP</th>
+                <th>Perangkat</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -102,6 +104,8 @@
                             }
                         </script>
                     </td>
+                    <td>{{ $item->ip_address }}</td>
+                    <td>{{ $item->device_name }}</td>
                     <td><h5 class="badge badge-info">Aktif</h5></td>
                     <td>
                         @if (auth()->user()->id != $item->user_id)

@@ -80,7 +80,7 @@
                                         class="border border-gray-300 rounded appearance-none text-center px-4 py-2 outline-none"
                                         id="page_length">
                                         <option value="10"
-                                            @isset($_GET['page_length']) {{ $_GET['page_length'] == 1 ? 'selected' : '' }} @endisset>
+                                            @isset($_GET['page_length']) {{ $_GET['page_length'] == 10 ? 'selected' : '' }} @endisset>
                                             10</option>
                                         <option value="20"
                                             @isset($_GET['page_length']) {{ $_GET['page_length'] == 20 ? 'selected' : '' }} @endisset>
@@ -187,6 +187,7 @@
                                         <p class="text-red-500">{{ $item->nama_pemroses }}</p>
                                     @endif
                                 </td>
+                                {{-- durasi --}}
                                 <td>
                                     @if ($item->posisi == 'Selesai')
                                         @php
@@ -339,7 +340,7 @@
                                                 @endif
                                                 @if (Auth::user()->role == 'Staf Analis Kredit' && $item->posisi == 'Selesai')
                                                     @php
-                                                        $tglCetak = DB::table('log_cetak_kkb')
+                                                        $tglCetak = DB::table('log_cetak')
                                                             ->where('id_pengajuan', $item->id)
                                                             ->first();
                                                     @endphp

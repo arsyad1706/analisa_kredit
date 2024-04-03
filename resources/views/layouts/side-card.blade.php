@@ -1,13 +1,13 @@
 @php
     $dataUmum = isset($dataUmum) ? $dataUmum : null;
-    
+
     $dataIndex = match ($skema ?? $dataUmum) {
         'PKPJ' => 1,
         'KKB' => 2,
         'Talangan Umroh' => 1,
         'Prokesra' => 1,
         'Kusuma' => 1,
-        null => 1,
+        null => 2,
         default => 1,
     };
 @endphp
@@ -17,16 +17,16 @@
             @if (Auth::user()->role != 'Pincab')
                 <div class="box-content side-wizard px-4 py-4 ">
                     <ul>
-                        {{-- @if (Auth::user()->role != 'Staf Analis Kredit')
+                        @if (Auth::user()->role != 'Staf Analis Kredit')
                             <li><label>RIWAYAT</label></li>
                             <li data-index='0'>
                                 <input type="hidden" name="answer" class="answer">
                                 <input type="hidden" name="answerFilled" class="answerFilled">
                                 <a href="#"><span><i>0%</i></span> Pengembalian Data</a>
                             </li>
-                        @endif --}}
+                        @endif
                         <li><label>DATA UMUM</label></li>
-                        <li data-index='0'>
+                        <li data-index='{{ Auth::user()->role != 'Staf Analis Kredit' ? 1 : 0 }}'>
                             <input type="hidden" name="answer" class="answer">
                             <input type="hidden" name="answerFilled" class="answerFilled">
                             <a href="#"><span><i>0%</i></span> Data Umum</a>
@@ -43,11 +43,11 @@
                         <li><label>PEMBAHASAN PER ASPEK</label></li>
                         @foreach ($dataAspek as $key => $value)
                             @php
-                                // if (Auth::user()->role != 'Staf Analis Kredit') {
-                                //     $key += $dataIndex + 1;
-                                // }else{
+                                if (Auth::user()->role != 'Staf Analis Kredit') {
+                                    $key += $dataIndex + 1;
+                                }else{
                                     $key += $dataIndex;
-                                // }
+                                }
                             @endphp
                             <li data-index='{{ $key }}'
                                 class="{{ request()->routeIs('pengajuan-kredit.edit') == 'pengajuan-kredit' ? 'active' : '' }}">
@@ -59,19 +59,19 @@
                         @endforeach
                         <br>
                         <li><label> PENDAPAT dan USULAN</label></li>
-                        {{-- @if (Auth::user()->role != 'Staf Analis Kredit')
+                        @if (Auth::user()->role != 'Staf Analis Kredit')
                             <li class="last" data-index='{{ count($dataAspek) + $dataIndex + 1 }}'>
                                 <input type="hidden" name="answer" class="answer">
                                 <input type="hidden" name="answerFilled" class="answerFilled">
                                 <a href="#"><span><i class="fa fa-ban"></i></span> Pendapat dan Usulan</a>
                             </li>
-                        @else --}}
+                        @else
                             <li class="last" data-index='{{ count($dataAspek) + $dataIndex }}'>
                                 <input type="hidden" name="answer" class="answer">
                                 <input type="hidden" name="answerFilled" class="answerFilled">
                                 <a href="#"><span><i class="fa fa-ban"></i></span> Pendapat dan Usulan</a>
                             </li>
-                        {{-- @endif --}}
+                        @endif
                     </ul>
                 </div>
             @endif

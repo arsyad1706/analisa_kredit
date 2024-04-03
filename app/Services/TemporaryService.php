@@ -116,7 +116,10 @@ class TemporaryService
             'id_kecamatan' => intval($request->kec),
             'id_desa' => intval($request->desa),
             'tenor_yang_diminta' => intval($request->tenor_yang_diminta),
-            'skema_kredit' => $request->skema_kredit
+            'skema_kredit' => $request->skema_kredit,
+            'produk_kredit_id' => $request->produk_kredit_id,
+            'skema_kredit_id' => $request->skema_kredit_id,
+            'skema_limit_id' => $request->skema_limit_id ?? null
         ];
     }
 

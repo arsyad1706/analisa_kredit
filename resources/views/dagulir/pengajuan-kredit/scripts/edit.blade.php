@@ -1172,47 +1172,47 @@
 
     }
 
-    var docKebKre = document.getElementById("perhitungan_kebutuhan_kredit");
-    var selectedFile;
+    // var docKebKre = document.getElementById("perhitungan_kebutuhan_kredit");
+    // var selectedFile;
 
-    docKebKre.addEventListener('change', updateImageDisplaydocKebKre);
+    // docKebKre.addEventListener('change', updateImageDisplaydocKebKre);
 
-    function updateImageDisplaydocKebKre() {
-        if (docKebKre.files.length == 0) {
-            docKebKre.files = selectedFile;
-        } else {
-            selectedFile = docKebKre.files;
-        }
+    // function updateImageDisplaydocKebKre() {
+    //     if (docKebKre.files.length == 0) {
+    //         docKebKre.files = selectedFile;
+    //     } else {
+    //         selectedFile = docKebKre.files;
+    //     }
 
-    }
+    // }
 
-    var docKebNet = document.getElementById("perhitungan_net_income");
-    var selectedFile;
+    // var docKebNet = document.getElementById("perhitungan_net_income");
+    // var selectedFile;
 
-    docKebNet.addEventListener('change', updateImageDisplaydocKebNet);
+    // docKebNet.addEventListener('change', updateImageDisplaydocKebNet);
 
-    function updateImageDisplaydocKebNet() {
-        if (docKebNet.files.length == 0) {
-            docKebNet.files = selectedFile;
-        } else {
-            selectedFile = docKebNet.files;
-        }
+    // function updateImageDisplaydocKebNet() {
+    //     if (docKebNet.files.length == 0) {
+    //         docKebNet.files = selectedFile;
+    //     } else {
+    //         selectedFile = docKebNet.files;
+    //     }
 
-    }
+    // }
 
-    var docKebInstll = document.getElementById("perhitungan_installment");
-    var selectedFile;
+    // var docKebInstll = document.getElementById("perhitungan_installment");
+    // var selectedFile;
 
-    docKebInstll.addEventListener('change', updateImageDisplaydocKebInstll);
+    // docKebInstll.addEventListener('change', updateImageDisplaydocKebInstll);
 
-    function updateImageDisplaydocKebInstll() {
-        if (docKebInstll.files.length == 0) {
-            docKebInstll.files = selectedFile;
-        } else {
-            selectedFile = docKebInstll.files;
-        }
+    // function updateImageDisplaydocKebInstll() {
+    //     if (docKebInstll.files.length == 0) {
+    //         docKebInstll.files = selectedFile;
+    //     } else {
+    //         selectedFile = docKebInstll.files;
+    //     }
 
-    }
+    // }
 </script>
 <script>
     // Start Validation
@@ -1641,7 +1641,11 @@
             if ((isNull && !$(this).prop('disabled') && !$(this).prop('readonly') && !$(this).prop('hidden') && !$(this).hasClass('hidden')) && !inputBox.hasClass('hidden') && !formGroup.hasClass('hidden') && !isHidden) {
                 totalInputNull++;
                 if ($(this).attr('id') != undefined) {
-                    nullValue.push($(this).attr('id').toString().replaceAll("_", " "))
+                    var val = $(this).attr('id').toString()
+                    if (val != "persentase_kebutuhan_kredit_opsi" && val != "ratio_tenor_asuransi_opsi" && val != "ratio_coverage_opsi" && val != "repayment_capacity_opsi") {
+                        //console.log(val)
+                        nullValue.push(val.replaceAll("_", " "))
+                    }
                 }
             } else if (!isNull && !$(this).prop('disabled') && !$(this).is(":checked") && !$(this).prop('readonly') && !$(this).prop('hidden') && !$(this).hasClass('hidden') && !inputBox.hasClass('hidden') && !formGroup.hasClass('hidden') && !isHidden) {
                 totalInputFilled++;

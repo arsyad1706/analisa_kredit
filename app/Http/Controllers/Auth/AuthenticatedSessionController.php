@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Session;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -37,6 +38,8 @@ class AuthenticatedSessionController extends Controller
                     ->where('email', $request->email)
                     ->orWhere('nip', $request->email)
                     ->first();
+        $device_name = gethostname();
+
         if ($user) {
             if ($user->role == 'Administrator' || $user->role == 'Direksi' || $user->user_dagulir == 1) {
                 if (\Hash::check($request->password, $user->password)) {
@@ -52,6 +55,13 @@ class AuthenticatedSessionController extends Controller
                     }
 
                     $request->session()->regenerate();
+
+                    // Set device name
+                    DB::table('sessions')
+                        ->where('user_id', auth()->user()->id)
+                        ->update([
+                            'device_name' => $device_name
+                        ]);
 
                     if ($user->role == 'Direksi') {
                         return redirect()->route('dashboard_direksi');
@@ -73,8 +83,15 @@ class AuthenticatedSessionController extends Controller
                             $request->session()->regenerateToken();
                             return back()->withError("Akun sedang digunakan di perangkat lain.");
                         }
+                        // Set device name
+                        DB::table('sessions')
+                            ->where('id', Session::getId())
+                            ->update([
+                                'device_name' => $device_name
+                            ]);
 
                         $request->session()->regenerate();
+
 
                         return redirect()->intended(RouteServiceProvider::HOME);
                     } else {

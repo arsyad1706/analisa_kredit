@@ -391,7 +391,7 @@
                                                         @endif
                                                         @if (Auth::user()->role == 'Staf Analis Kredit' && $item->posisi == 'Selesai')
                                                             @php
-                                                                $tglCetak = DB::table('log_cetak_kkb')
+                                                                $tglCetak = DB::table('log_cetak')
                                                                     ->where('id_pengajuan', $item->id)
                                                                     ->first();
                                                             @endphp

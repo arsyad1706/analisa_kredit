@@ -99,6 +99,9 @@
                                     <a class="dropdown-item" href="{{ route('tipe.index') }}">Master Tipe</a>
                                     <a class="dropdown-item" href="{{ route('index-session') }}">Master Session</a>
                                     <a class="dropdown-item" href="{{ route('index-api-session') }}">Master API Session</a>
+                                    <a class="dropdown-item" href="{{ route('skema-kredit.index') }}">Master Skema Kredit</a>
+                                    <a class="dropdown-item" href="{{ route('produk-kredit.index') }}">Master Produk Kredit</a>
+                                    <a class="dropdown-item" href="{{ route('skema-limit.index') }}">Master Skema Limit</a>
                                 </div>
                             </li>
                         @endif
@@ -259,6 +262,29 @@
             );
             console.log('bisa');
         });
+        
+        function calculateFormula(formula) {
+            try {
+                // console.log('calculate with formula')
+                // console.log(formula)
+                if (formula.includes('inp_'))
+                    return ''
+                else {
+                    var result = formula.replace(/[^-()\d/*+.]/g, '');
+                    return eval(result);
+                }
+            }
+            catch (e) {
+                // console.log(e)
+                return 0
+            }
+        }
+
+        function alphaOnly(string) {
+            string = string.replace(/[^A-Za-z_]/g, '');
+
+            return string;
+        }
     </script>
 
     @stack('custom-script')

@@ -34,6 +34,9 @@ class CalonNasabahTemp extends Model
         'tenor_yang_diminta',
         'jaminan_tambahan',
         'skema_kredit',
-        'type_loan'
+        'type_loan',
+        'produk_kredit_id',
+        'skema_kredit_id',
+        'skema_limit_id'
     ];
 }
