@@ -361,7 +361,7 @@
                     $.each(response.itemBuktiPemilikan, function(i, valItem) {
                         if (valItem.nama == 'Atas Nama') {
                             $('#bukti_pemilikan_jaminan_tambahan').append(`
-                                <div class="form-group aspek_jaminan_kategori">
+                                <div class="form-group input-box aspek_jaminan_kategori">
                                     <label>${valItem.nama}</label>
                                     <input type="hidden" name="id_level[${valItem.id}]" value="${valItem.id}" id="" class="input">
                                     <input type="hidden" name="opsi_jawaban[${valItem.id}]"
@@ -375,7 +375,7 @@
                             name_lowercase = name_lowercase.replaceAll(' ', '_')
                             if (valItem.nama == 'Foto') {
                                 $('#bukti_pemilikan_jaminan_tambahan').append(`
-                                    <div class="form-group file-wrapper item-${valItem.id}">
+                                    <div class="form-group input-box file-wrapper item-${valItem.id}">
                                         <label for="">${valItem.nama}</label><small class="text-red-500 font-bold"> (.jpg, .jpeg, .png, .webp)</small>
                                         <a class="text-theme-primary underline underline-offset-4 cursor-pointer open-modal btn-file-preview"
                                             data-title="{{$itemNIB->nama}}"
@@ -414,7 +414,7 @@
                                     }
                                 }
                                 $('#bukti_pemilikan_jaminan_tambahan').append(`
-                                    <div class="form-group aspek_jaminan_kategori">
+                                    <div class="form-group input-box aspek_jaminan_kategori">
                                         <label>${isCheck} ${valItem.nama}</label>
                                         <input type="hidden" name="id_level[${valItem.id}]" value="${valItem.id}" id="" class="input" ${isDisabled}>
                                         <input type="hidden" name="opsi_jawaban[${valItem.id}]"

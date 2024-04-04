@@ -29,6 +29,9 @@ use App\Models\JawabanTempModel;
 use App\Models\LogPengajuan;
 use App\Models\MasterDDLoan;
 use App\Models\MerkModel;
+use App\Models\MstProdukKredit;
+use App\Models\MstSkemaKredit;
+use App\Models\MstSkemaLimit;
 use App\Models\PengajuanDagulir;
 use App\Models\PengajuanDagulirTemp;
 use App\Models\PerhitunganKredit;
@@ -3803,7 +3806,21 @@ class NewDagulirController extends Controller
                                                 ->first();
         }
         $data['dataPertanyaanSatu'] = ItemModel::select('id', 'nama', 'level', 'id_parent')->where('level', 2)->where('id_parent', 3)->get();
-        $param['skema'] = $request->skema_kredit ?? $param['duTemp']?->skema_kredit;
+        if ($request->skema_kredit != 'Dagulir') {
+            $param['skema'] = $request->skema ?? $param['duTemp']?->skema_kredit;
+            $produkKredit = DB::table('temporary_calon_nasabah')
+                ->where('id', $request->tempId)
+                ->first();
+            $param['produk'] = $produkKredit->produk_id ?? $request->produk;
+            $param['skemaId'] = $produkKredit->skema_kredit_id ?? $request->skema;
+            $param['limit'] = $produkKredit->skema_limit_id ?? $request->limit;
+            $param['produkKredit'] = MstProdukKredit::select('id', 'name')->get();
+            $param['skemaKredit'] = MstSkemaKredit::select('id', 'name')->get();
+            $param['limitKredit'] = MstSkemaLimit::select('id', 'from', 'to', 'operator')->get();
+            $param['maxKredit'] = $param['limit'] ? MstSkemaLimit::where('id', $param['limit'])->first() : null;
+        }
+        $param['jenis_usaha'] = config('dagulir.jenis_usaha');
+        $param['tipe'] = config('dagulir.tipe_pengajuan');
         return view('dagulir.pengajuan-kredit.continue-draft', $param);
     }
 
@@ -4418,7 +4435,7 @@ class NewDagulirController extends Controller
         if ($request->skema_kredit == 'Dagulir') {
             $dagulir = PengajuanDagulirTemp::find($request->id_dagulir_temp);
             $temp = DB::table('temporary_jawaban_text')
-                        ->where('temporary_dagulir_id'. $request->dagulir_temp)
+                        ->where('temporary_dagulir_id', $request->dagulir_temp)
                         ->where('id_jawaban', $request->answer_id)
                         ->first();
             if (!$temp) {

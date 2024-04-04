@@ -118,7 +118,7 @@ null => 1,
             <input type="hidden" name="produk_kredit_id" id="produk_kredit" @if ($produk !=null) value="{{ $produk ?? '' }}" @elseif($duTemp->produk_kredit_id != null) value="{{ $duTemp->produk_kredit_id ?? '' }}" @endif>
             <input type="hidden" name="skema_kredit_id" @if($duTemp->skema_kredit_id != null) value="{{ $duTemp->skema_kredit_id ?? '' }}" @endif>
             <input type="hidden" name="skema_limit_id" @if ($limit != null) value="{{ $limit }}" @elseif($duTemp->skema_limit_id != null) value="{{ $duTemp->skema_limit_id ?? '' }}" @endif>
-            
+
 
             <div class="form-group col-md-6">
                 <label for="">Nama Lengkap</label>
@@ -558,7 +558,7 @@ is-invalid
         @php
         $getPeriode = \App\Models\PeriodeAspekKeuangan::join('perhitungan_kredit', 'periode_aspek_keuangan.perhitungan_kredit_id', '=', 'perhitungan_kredit.id')
                                         ->where('perhitungan_kredit.temp_calon_nasabah_id', $duTemp->id)
-                                        ->select('periode_aspek_keuangan.*', 'perhitungan_kredit.*') 
+                                        ->select('periode_aspek_keuangan.*', 'perhitungan_kredit.*')
                                         ->get();
         function formatBulan($value){
             if ($value == 1) {
@@ -595,8 +595,8 @@ is-invalid
                     $lev1 = \App\Models\MstItemPerhitunganKredit::where('skema_kredit_limit_id', 1)->where('level', 1)->get();
                     function formatRupiah($angka){
                         $format_rupiah = number_format($angka, 2, ',', '.');
-                        $format_rupiah = rtrim($format_rupiah, '0'); 
-                        $format_rupiah = str_replace(',', '', $format_rupiah); 
+                        $format_rupiah = rtrim($format_rupiah, '0');
+                        $format_rupiah = str_replace(',', '', $format_rupiah);
                         echo $format_rupiah;
                     }
                     $lev1Count = 0;
@@ -810,7 +810,7 @@ is-invalid
                                                                     <td width="6%" style="text-align: center">:</td>
                                                                     <td class="text-{{ $itemAspekKeuangan3->align }}">Rp {{ formatRupiah($itemAspekKeuangan3->nominal) }}</td>
                                                                 </tr>
-                                                            @else  
+                                                            @else
                                                                 <table class="table table-borderless" style="margin: 0 auto; padding: 0 auto;">
                                                                     <tr>
                                                                         <td width="47%"></td>
@@ -3336,6 +3336,7 @@ is-invalid
                                                 if(id_formula != 'inp_68'){
                                                     result = result < 0 ? `(${formatrupiah(parseInt(result).toString())})` : formatrupiah(parseInt(result).toString())
                                                 } else{
+                                                    result = isNaN(result) ? 0 : result;
                                                     $("#repayment_capacity").val(result)
                                                 }
                                                 $(`#${id_formula}`).val(result)
@@ -3402,7 +3403,7 @@ is-invalid
             return false; // Return false if no match is found
         }
 
-    $('#btn-perhitungan').on('click', function() { 
+    $('#btn-perhitungan').on('click', function() {
         $('#loading-simpan-perhitungan').hide();
         $('#perhitunganModalAfterLoading').show();
         $("#perhitunganModal").modal("show");
@@ -3437,7 +3438,7 @@ is-invalid
                 return "Desember";
         }
     }
-    
+
     var indexBtnSimpan = 0;
     $("#btnSimpanPerhitungan").on('click',function(e){
         console.log('test');
@@ -3460,7 +3461,7 @@ is-invalid
         var selectValueElementBulan = $("#periode").val();
         var selectElementTahun = $("#periode_tahun").find(":selected").text();
         var titlePeriode = ``;
-        
+
         if (indexBtnSimpan == 1) {
             $('#perhitungan_kredit_with_value').append(`
                 <h5>Periode : ${selectElementBulan} - ${selectElementTahun}</h5>
@@ -3532,7 +3533,7 @@ is-invalid
                     }
                 });
             });
-        }  
+        }
 
         async function getDataPerhitunganKreditLev1() {
             try {
@@ -3617,6 +3618,7 @@ is-invalid
                         $('#perhitunganModalAfterLoading').hide();
                     },
                 });
+                console.log(resPeriode2);
 
                 var lev1Count = 0;
                 for (const element of res2.result) {
@@ -3762,9 +3764,9 @@ is-invalid
                                                 <td style="text-align: center">:</td>
                                                 <td class="text-${itemAspekKeuangan3.align}">Rp ${formatRupiah(String(nominal), '')}</td>
                                                 <td class="text-${itemAspekKeuangan3.align}">`;
-    
+
                                         var isFirstNominalDisplayed = false;
-                                        
+
                                         res4.result.forEach(function(item) {
                                             if (item.field === fieldValue) {
                                                 if (isFirstNominalDisplayed) {
@@ -3774,12 +3776,12 @@ is-invalid
                                                 }
                                             }
                                         });
-    
+
                                         rowLevel3 += `
                                                 </td>
                                             </tr>
                                         `;
-    
+
                                         $('#lev1_count_dua').append(rowLevel3);
                                         fieldValues.push(fieldValue);
                                     }
@@ -3794,7 +3796,7 @@ is-invalid
                                                 ` : `
                                                     <td class="text-${itemAspekKeuangan3.align}">Rp ${formatRupiah(String(nominal), '')}</td>
                                                 `}
-                                                
+
                                             </tr>
                                         `);
                                     }else{

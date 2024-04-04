@@ -4276,10 +4276,11 @@ class PengajuanKreditController extends Controller
                         'nominal' => null,
                         'updated_at' => now()
                     ]);
-
+                $idTerakhir = DB::table('perhitungan_kredit')->latest('id')->first()->id;
                 DB::commit();
                 return response()->json([
                     'message' => 'Berhasil mengubah data.',
+                    'lastId' => $idTerakhir,
                     'request' => $request->all()
                 ]);
             }
