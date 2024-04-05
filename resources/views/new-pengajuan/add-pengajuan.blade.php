@@ -233,27 +233,29 @@ $dataIndex = match ($skema) {
 
                                         @else
                                                 @if ($item->opsi_jawaban == 'input text')
-                                                    <div class="form-group">
-                                                        <div class="input-box">
-                                                            <label for="">{{ $item->nama }}</label><small class="text-red-500 font-bold">*</small>
-                                                            <div class="flex items-center">
-                                                                <div class="flex-1">
-                                                                    <input type="hidden" name="opsi_jawaban[{{ $item->id }}]"
-                                                                        value="{{ $item->opsi_jawaban }}" id="">
-                                                                    <input type="hidden" name="id_level[{{ $item->id }}]" value="{{ $item->id }}"
-                                                                        id="">
-                                                                    <input type="text" maxlength="255" name="informasi[{{ $item->id }}]"
-                                                                        id="{{ $idLevelDua }}" placeholder="Masukkan informasi {{ $item->nama }}"
-                                                                        class="form-input {{$item->is_rupiah ? 'rupiah' : ''}}" >
-                                                                </div>
-                                                                @if ($item->suffix)
-                                                                    <div class="flex-shrink-0  mt-2.5rem">
-                                                                        <span class="form-input bg-gray-100">{{$item->suffix}}</span>
+                                                    @if ($value->nama != 'Aspek Keuangan')
+                                                        <div class="form-group">
+                                                            <div class="input-box">
+                                                                <label for="">{{ $item->nama }}</label><small class="text-red-500 font-bold">*</small>
+                                                                <div class="flex items-center">
+                                                                    <div class="flex-1">
+                                                                        <input type="hidden" name="opsi_jawaban[{{ $item->id }}]"
+                                                                            value="{{ $item->opsi_jawaban }}" id="">
+                                                                        <input type="hidden" name="id_level[{{ $item->id }}]" value="{{ $item->id }}"
+                                                                            id="">
+                                                                        <input type="text" maxlength="255" name="informasi[{{ $item->id }}]"
+                                                                            id="{{ $idLevelDua }}" placeholder="Masukkan informasi {{ $item->nama }}"
+                                                                            class="form-input {{$item->is_rupiah ? 'rupiah' : ''}}" >
                                                                     </div>
-                                                                @endif
+                                                                    @if ($item->suffix)
+                                                                        <div class="flex-shrink-0  mt-2.5rem">
+                                                                            <span class="form-input bg-gray-100">{{$item->suffix}}</span>
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    @endif
                                                 @elseif ($item->opsi_jawaban == 'number')
                                                     @if ($item->nama == 'Repayment Capacity')
                                                         <div class="form-group">

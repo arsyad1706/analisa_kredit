@@ -220,7 +220,7 @@
                                 @endphp
                                 @forelse ($data as $item)
                                 @php
-                                    $tglCetak = DB::table('log_cetak')
+                                    $tglCetak = DB::table('log_cetak_kkb')
                                                     ->where('id_pengajuan', $item->pengajuan->id)
                                                     ->first();
                                 @endphp
@@ -921,7 +921,7 @@
                                                         @endif
                                                         @if (Auth::user()->role == 'Staf Analis Kredit' && $item->pengajuan->posisi == 'Selesai')
                                                             @php
-                                                                $tglCetak = DB::table('log_cetak')
+                                                                $tglCetak = DB::table('log_cetak_kkb')
                                                                     ->where('id_pengajuan', $item->pengajuan->id)
                                                                     ->first();
                                                             @endphp

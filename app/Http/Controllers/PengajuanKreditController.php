@@ -750,7 +750,7 @@ class PengajuanKreditController extends Controller
         $param['produk'] = $request->produk;
         $param['skemaId'] = $request->skema;
         $param['limit'] = $request->limit;
-        $param['produkKredit'] = MstProdukKredit::select('id', 'name')->get();
+        $param['produkKredit'] = MstProdukKredit::select('id', 'name')->where('name','!=','Dagulir')->get();
         $param['skemaKredit'] = MstSkemaKredit::select('id', 'name')->get();
         $param['limitKredit'] = MstSkemaLimit::select('id', 'from', 'to', 'operator')->get();
         $param['skema'] = MstProdukKredit::find($param['produk'])->name ?? null;
@@ -3861,7 +3861,7 @@ class PengajuanKreditController extends Controller
                         mkdir($folderPK, 0755, true);
                     }
                     $filePK->move($folderPK, $filenamePK);
-                    DB::table('log_cetak')
+                    DB::table('log_cetak_kkb')
                         ->where('id_pengajuan', $id)
                         ->update([
                             'no_pk' => $noPK

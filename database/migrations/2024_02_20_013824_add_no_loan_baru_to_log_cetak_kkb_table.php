@@ -13,9 +13,9 @@ class AddNoLoanBaruToLogCetakKkbTable extends Migration
      */
     public function up()
     {
-        Schema::table('log_cetak_kkb', function (Blueprint $table) {
-            $table->string('no_pk', 100)->nullable();
-        });
+        // Schema::table('log_cetak_kkb', function (Blueprint $table) {
+        //     $table->string('no_pk', 100)->nullable();
+        // });
     }
 
     /**
