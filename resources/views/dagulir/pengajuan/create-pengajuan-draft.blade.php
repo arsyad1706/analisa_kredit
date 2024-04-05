@@ -423,8 +423,16 @@
                     @endif
                 @endif
                 <input type="hidden" name="id_item_file[{{ $itemP->id }}]" value="{{ $itemP->id }}" id="">
-                <input type="file" name="upload_file[{{ $itemP->id }}]" id="file_slik" data-id=""
-                    placeholder="Masukkan informasi {{ $itemP->nama }}" class="form-input limit-size-slik" value="{{ $jawabanLaporanSlik->opsi_text }}">
+                @if ($jawabanLaporanSlik)
+                    @if ($jawabanLaporanSlik->opsi_text)
+                        <input type="file" name="upload_file[{{ $itemP->id }}]" id="file_slik" data-id="" placeholder="Masukkan informasi {{ $itemP->nama }}" class="form-input limit-size-slik" value="{{ $jawabanLaporanSlik->opsi_text }}">
+                    @else
+                        <input type="file" name="upload_file[{{ $itemP->id }}]" id="file_slik" data-id="" placeholder="Masukkan informasi {{ $itemP->nama }}" class="form-input limit-size-slik" value="">
+                    @endif
+                @else
+                    <input type="file" name="upload_file[{{ $itemP->id }}]" id="file_slik" data-id="" placeholder="Masukkan informasi {{ $itemP->nama }}" class="form-input limit-size-slik" value="">
+
+                @endif
                 <span class="invalid-tooltip" style="display: none">Besaran file tidak boleh lebih dari 10 MB</span>
                 @if (isset($key) && $errors->has('dataLevelDua.' . $key))
                 <div class="invalid-feedback">
