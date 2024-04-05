@@ -25,7 +25,7 @@ class AddNoLoanToLogCetakKkbTable extends Migration
      */
     public function down()
     {
-        Schema::table('log_cetak_kkb', function (Blueprint $table) {
+        Schema::table('log_cetak', function (Blueprint $table) {
             $table->dropColumn('no_loan');
         });
     }

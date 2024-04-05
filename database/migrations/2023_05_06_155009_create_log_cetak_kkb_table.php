@@ -13,7 +13,7 @@ class CreateLogCetakKkbTable extends Migration
      */
     public function up()
     {
-        Schema::create('log_cetak_kkb', function (Blueprint $table) {
+        Schema::create('log_cetak', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_pengajuan')->constrained('pengajuan')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('tgl_cetak_sppk')->nullable();
@@ -30,6 +30,6 @@ class CreateLogCetakKkbTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('log_cetak_kkb');
+        Schema::dropIfExists('log_cetak');
     }
 }

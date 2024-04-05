@@ -15,7 +15,14 @@
                 </a>
                 <hr>
                 @csrf
+                <div class="alert alert-primary" role="alert">
+                    No PK belum diinputkan.
+                </div>
                 <input type="hidden" name="tipe_file" value="PK">
+                <div class="form-group">
+                    <label for="no_pk">No PK</label>
+                    <input type="text" class="form-control" name="no_pk" required>
+                </div>
                 <div class="form-group">
                     <label for="pk">File PK</label>
                     <input type="file" name="pk" id="pk" class="form-control file" required>

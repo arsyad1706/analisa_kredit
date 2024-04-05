@@ -248,7 +248,6 @@ class DashboardController extends Controller
             $seluruh_data = $seluruh_data->get();
             $seluruh_data_proses = $seluruh_data_proses->get();
             // End new code
-
             if ($jExport == 'pdf') {
                 $param['data'] = $seluruh_data;
                 $param['data2'] = $seluruh_data_proses;
@@ -257,34 +256,36 @@ class DashboardController extends Controller
                 // return view('modal.DataNominatif', $param);
                 // Return hasil PDF untuk diunduh atau ditampilkan
                 if ($type != "kesuluruhan") {
+                    // return "Tanggal";
                     if ($pilCabang == 'semua') {
-                        return $pdf->download('Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' Semua Cabang' . '.pdf');
+                        return $pdf->download('Data Nominatif Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' Semua Cabang' . '.pdf');
                     } else {
                         $name_cabang = cabang::select('cabang')->where('id', $pilCabang)->first();
-                        return $pdf->download('Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' cabang ' . $name_cabang->cabang . '.pdf');
+                        return $pdf->download('Data Nominatif Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' cabang ' . $name_cabang->cabang . '.pdf');
                     }
                 } else {
+                    // return "Keseluruhan";
                     if ($pilCabang == 'semua') {
-                        return $pdf->download('Kategori keseluruhan Semua Cabang' . '.pdf');
+                        return $pdf->download('Data Nominatif Kategori keseluruhan Semua Cabang' . '.pdf');
                     } else {
                         $name_cabang = cabang::select('cabang')->where('id', $pilCabang)->first();
-                        return $pdf->download('Kategori keseluruhan cabang ' . $name_cabang->cabang . '.pdf');
+                        return $pdf->download('Data Nominatif Kategori keseluruhan cabang ' . $name_cabang->cabang . '.pdf');
                     }
                 }
             } else {
                 if ($type != "kesuluruhan") {
                     if ($pilCabang == 'semua') {
-                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' Semua Cabang' . '.xlsx');
+                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Data Nominatif Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' Semua Cabang' . '.xlsx');
                     } else {
                         $name_cabang = cabang::select('cabang')->where('id', $pilCabang)->first();
-                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' cabang ' . $name_cabang->cabang .'.xlsx');
+                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Data Nominatif Kategori berdasarkan tanggal ' . $request->tAwal . ' sampai dengan ' . $request->tAkhir . ' cabang ' . $name_cabang->cabang .'.xlsx');
                     }
                 } else {
                     if ($pilCabang == 'semua') {
-                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Kategori keseluruhan Semua Cabang' . '.xlsx');
+                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Data Nominatif Kategori keseluruhan Semua Cabang' . '.xlsx');
                     } else {
                         $name_cabang = cabang::select('cabang')->where('id', $pilCabang)->first();
-                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Kategori keseluruhan cabang ' . $name_cabang->cabang . '.xlsx');
+                        return Excel::download(new DataNominatif($seluruh_data, $seluruh_data_proses), 'Data Nominatif Kategori keseluruhan cabang ' . $name_cabang->cabang . '.xlsx');
                     }
                 }
             }
@@ -295,5 +296,6 @@ class DashboardController extends Controller
             return $th;
         }
     }
+
 
 }

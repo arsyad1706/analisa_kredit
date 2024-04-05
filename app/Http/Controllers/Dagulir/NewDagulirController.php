@@ -29,8 +29,12 @@ use App\Models\JawabanTempModel;
 use App\Models\LogPengajuan;
 use App\Models\MasterDDLoan;
 use App\Models\MerkModel;
+use App\Models\MstProdukKredit;
+use App\Models\MstSkemaKredit;
+use App\Models\MstSkemaLimit;
 use App\Models\PengajuanDagulir;
 use App\Models\PengajuanDagulirTemp;
+use App\Models\PerhitunganKredit;
 use App\Models\PlafonUsulan;
 use App\Models\TipeModel;
 use App\Models\User;
@@ -773,10 +777,17 @@ class NewDagulirController extends Controller
             $namaNasabah = $request->skema_kredit == 'Dagulir' ? $pengajuan->nama : CalonNasabah::find($addData->id)->nama;
             // Delete data Draft
             if ($request->skema_kredit == 'Dagulir') {
+                DB::commit();
                 JawabanTemp::where('temporary_dagulir_id', $request->id_dagulir_temp)->delete();
                 JawabanTempModel::where('temporary_dagulir_id', $request->id_dagulir_temp)->delete();
                 PengajuanDagulirTemp::where('id', $request->id_dagulir_temp)->delete();
             } else {
+                DB::commit();
+                PerhitunganKredit::where('temp_calon_nasabah_id', $request->id_dagulir_temp)
+                ->update([
+                    'pengajuan_id' => $id_pengajuan,
+                    'temp_calon_nasabah_id' => null
+                ]);
                 JawabanTemp::where('id_temporary_calon_nasabah', $request->id_dagulir_temp)->delete();
                 JawabanTempModel::where('id_temporary_calon_nasabah', $request->id_dagulir_temp)->delete();
                 CalonNasabahTemp::find($request->id_dagulir_temp)->delete();
@@ -2318,11 +2329,11 @@ class NewDagulirController extends Controller
 
 
     function CetakPK($id) {
-        $count = DB::table('log_cetak_kkb')
+        $count = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->count('tgl_cetak_pk');
         if ($count < 1) {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->where('id_pengajuan', $id)
             ->update([
                 'tgl_cetak_pk' => now()
@@ -2363,7 +2374,7 @@ class NewDagulirController extends Controller
             ->first();
 
 
-        $param['tglCetak'] = DB::table('log_cetak_kkb')
+        $param['tglCetak'] = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->first();
 
@@ -2389,17 +2400,17 @@ class NewDagulirController extends Controller
     }
     public function cetakSPPk($id)
     {
-        $count = DB::table('log_cetak_kkb')
+        $count = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
             ->count('*');
         if ($count < 1) {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->insert([
                 'id_pengajuan' => $id,
                 'tgl_cetak_sppk' => now()
             ]);
         } else {
-            DB::table('log_cetak_kkb')
+            DB::table('log_cetak')
             ->where('id_pengajuan', $id)
                 ->update([
                     'tgl_cetak_sppk' => now()
@@ -2445,7 +2456,7 @@ class NewDagulirController extends Controller
         ->where('id', $dataUmum->id_cabang)
         ->first();
 
-        $tglCetak = DB::table('log_cetak_kkb')
+        $tglCetak = DB::table('log_cetak')
         ->where('id_pengajuan', $id)
         ->first();
         $param['tglCetak'] = $tglCetak;
@@ -2633,7 +2644,7 @@ class NewDagulirController extends Controller
                     }
                     $filePK->move($folderPK, $filenamePK);
 
-                    DB::table('log_cetak_kkb')
+                    DB::table('log_cetak')
                     ->where('id_pengajuan', $id)
                     ->update([
                         'no_pk' => $request->get('no_pk'),
@@ -3864,7 +3875,21 @@ class NewDagulirController extends Controller
                                                 ->first();
         }
         $data['dataPertanyaanSatu'] = ItemModel::select('id', 'nama', 'level', 'id_parent')->where('level', 2)->where('id_parent', 3)->get();
-        $param['skema'] = $request->skema_kredit ?? $param['duTemp']?->skema_kredit;
+        if ($request->skema_kredit != 'Dagulir') {
+            $param['skema'] = $request->skema ?? $param['duTemp']?->skema_kredit;
+            $produkKredit = DB::table('temporary_calon_nasabah')
+                ->where('id', $request->tempId)
+                ->first();
+            $param['produk'] = $produkKredit->produk_id ?? $request->produk;
+            $param['skemaId'] = $produkKredit->skema_kredit_id ?? $request->skema;
+            $param['limit'] = $produkKredit->skema_limit_id ?? $request->limit;
+            $param['produkKredit'] = MstProdukKredit::select('id', 'name')->get();
+            $param['skemaKredit'] = MstSkemaKredit::select('id', 'name')->get();
+            $param['limitKredit'] = MstSkemaLimit::select('id', 'from', 'to', 'operator')->get();
+            $param['maxKredit'] = $param['limit'] ? MstSkemaLimit::where('id', $param['limit'])->first() : null;
+        }
+        $param['jenis_usaha'] = config('dagulir.jenis_usaha');
+        $param['tipe'] = config('dagulir.tipe_pengajuan');
         return view('dagulir.pengajuan-kredit.continue-draft', $param);
     }
 
@@ -4479,7 +4504,7 @@ class NewDagulirController extends Controller
         if ($request->skema_kredit == 'Dagulir') {
             $dagulir = PengajuanDagulirTemp::find($request->id_dagulir_temp);
             $temp = DB::table('temporary_jawaban_text')
-                        ->where('temporary_dagulir_id'. $request->dagulir_temp)
+                        ->where('temporary_dagulir_id', $request->dagulir_temp)
                         ->where('id_jawaban', $request->answer_id)
                         ->first();
             if (!$temp) {

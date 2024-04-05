@@ -18,6 +18,7 @@
     <link href="{{ asset('plugins/lightbox/css/lightbox.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/0.5.7/perfect-scrollbar.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @stack('css')
 </head>
 <body class="bg-theme-body font-poppins" id="app">
     {{-- section modal only --}}
@@ -68,6 +69,27 @@
             else {
                 return token;
             }
+        }
+        function calculateFormula(formula) {
+            try {
+                // console.log('calculate with formula')
+                // console.log(formula)
+                if (formula.includes('inp_'))
+                    return ''
+                else {
+                    var result = formula.replace(/[^-()\d/*+.]/g, '');
+                    return eval(result);
+                }
+            }
+            catch (e) {
+                // console.log(e)
+                return 0
+            }
+        }
+        function alphaOnly(string) {
+            string = string.replace(/[^A-Za-z_]/g, '');
+
+            return string;
         }
     </script>
     @stack('script-inject')

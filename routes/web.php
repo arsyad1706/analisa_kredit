@@ -35,7 +35,9 @@ use App\Http\Controllers\UploadOnedriveController;
 use App\Models\PengajuanModel;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
-
+use App\Http\Controllers\MasterSkemaLimitController;
+use App\Http\Controllers\ProdukKreditController;
+use App\Http\Controllers\SkemaKreditController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -291,6 +293,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('merk', MerkController::class);
         Route::resource('tipe', TipeController::class);
         Route::resource('master-item', MasterItemController::class);
+        Route::resource('produk-kredit', ProdukKreditController::class);
+        Route::resource('skema-kredit', SkemaKreditController::class);
+        //Route::get('')
+        Route::resource('skema-limit', MasterSkemaLimitController::class);
+        Route::get('/skema-limit/formula/{id}', [MasterSkemaLimitController::class, 'formula'])->name('get-formula');
         Route::get('/reset-sessions', [UserController::class, 'indexSession'])->name('index-session');
         Route::post('/reset-session/{id}', [UserController::class, 'resetSession'])->name('reset-session');
         Route::get('/reset-api-sessions', [UserController::class, 'indexAPISession'])->name('index-api-session');
@@ -333,7 +340,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('pembayaran/check-data',[PembayaranController::class,'store'])->name('pembayaran.store');
     Route::post('pembayaran/proses-data',[PembayaranController::class,'proses_data'])->name('pembayaran.proses');
 
+    Route::get('/get-skema-kredit', [PengajuanKreditController::class, 'getSkemaKredit'])->name('get-skema-kredit');
+    Route::get('/get-skema-limit', [PengajuanKreditController::class, 'getSkemaLimit'])->name('get-skema-limit');
 
+    Route::post('/save-data-perhitungan-temp', [PengajuanKreditController::class, 'saveDataPerhitunganTemp'])->name('pengajuan-kredit.save-data-perhitungan-temp');
+    Route::post('/edit-perhitungan-kredit', [PengajuanKreditController::class, 'editPerhitunganKredit'])->name('pengajuan-kredit.edit-perhitungan-kredit');
+    Route::get('/get-perhitungan-kredit-lev1', [PengajuanKreditController::class, 'getPerhitunganKreditLev1'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev1');
+    Route::get('/get-perhitungan-kredit-lev2', [PengajuanKreditController::class, 'getPerhitunganKreditLev2'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev2');
+    Route::get('/get-perhitungan-kredit-lev3', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev3');
+    Route::get('/get-perhitungan-kredit-lev3-edit', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3Edit'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev3-edit');
+    Route::get('/get-perhitungan-kredit-lev3-noparent/{idClnNasabah}', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3NoParent']);
+    Route::get('/get-perhitungan-kredit-lev3-noparent-edit/{idClnNasabah}', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3NoParentEdit']);
+    Route::get('/get-perhitungan-kredit-lev2-noparent', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev2NoParent'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev2-noparent');
+    Route::get('/get-perhitungan-kredit-lev3-noparent2', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3NoParent2'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev3-noparent2');
+    Route::get('/get-perhitungan-kredit-lev3-noparent2-edit', [PengajuanKreditController::class, 'getDataPerhitunganKreditLev3NoParent2Edit'])->name('pengajuan-kredit.get-data-perhitungan-kredit-lev3-noparent2-edit');
+    Route::post('/save-data-periode-aspek-keuangan', [PengajuanKreditController::class, 'saveDataPeriodeAspekKeuangan'])->name('pengajuan-kredit.save-data-periode-aspek-keuangan');
+    Route::put('/update-data-periode-aspek-keuangan', [PengajuanKreditController::class, 'updateDataPeriodeAspekKeuangan'])->name('pengajuan-kredit.update-data-periode-aspek-keuangan');
+    Route::get('/get-periode-perhitungan-kredit-edit', [PengajuanKreditController::class, 'getPeriodeAspekKeuanganEdit'])->name('get-periode-perhitungan-kredit-edit');
+    Route::get('/get-periode-perhitungan-kredit-draft', [PengajuanKreditController::class, 'getPeriodeAspekKeuanganDraft'])->name('get-periode-perhitungan-kredit-draft');
 });
 Route::get('test',[PembayaranController::class,'checkPembayaran']);
 
