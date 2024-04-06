@@ -1,6 +1,5 @@
 @php
-    function getKaryawan($nip)
-    {
+    function getKaryawan($nip){
         $konfiAPI = DB::table('api_configuration')->first();
         $host = $konfiAPI->hcs_host;
         $curl = curl_init();
@@ -21,14 +20,13 @@
         $json = json_decode($response);
 
         if ($json) {
-            if ($json->data) {
+            if ($json->data)
                 return $json->data->nama_karyawan;
-            }
         }
     }
 @endphp
 <div class="space-y-5">
-    {{-- @foreach ($rolesPemroses['roles'] as $key => $itemRole)
+    @foreach ($rolesPemroses['roles'] as $key => $itemRole)
         @php
             $log = DB::table('log_pengajuan')
                 ->where('id_pengajuan', $dataUmum->id)
@@ -43,13 +41,12 @@
             } elseif ($itemRole == 'PBO') {
                 $avg = $dataUmum->average_by_pbo ? $dataUmum->average_by_pbo : $dataUmum->average_by_penyelia;
             } elseif ($itemRole == 'PBP') {
-                if ($dataUmum->average_by_pbp && !$dataUmum->average_by_pbo && !$dataUmum->average_by_penyelia) {
+                if ($dataUmum->average_by_pbp && !$dataUmum->average_by_pbo && !$dataUmum->average_by_penyelia)
                     $avg = $dataUmum->average_by_pbp;
-                } elseif (!$dataUmum->average_by_pbp && $dataUmum->average_by_pbo && !$dataUmum->average_by_penyelia) {
+                else if (!$dataUmum->average_by_pbp && $dataUmum->average_by_pbo && !$dataUmum->average_by_penyelia)
                     $avg = $dataUmum->average_by_pbo;
-                } elseif (!$dataUmum->average_by_pbp && !$dataUmum->average_by_pbo && $dataUmum->average_by_penyelia) {
+                else if (!$dataUmum->average_by_pbp && !$dataUmum->average_by_pbo && $dataUmum->average_by_penyelia)
                     $avg = $dataUmum->average_by_penyelia;
-                }
             } elseif ($itemRole == 'Pincab') {
                 $avg = $dataUmum->average_by_penyelia;
             }
@@ -79,6 +76,7 @@
                     ->first();
             }
 
+
         @endphp
         <div class="field-review">
             <div class="field-name">
@@ -86,8 +84,7 @@
             </div>
             <div class="field-answer">
                 @if ($itemRole == 'Pincab')
-                    <p>{{ $user ? $user->nip_users . ' - ' . getKaryawan($user->nip) . ' ' . '(' . $user->email . ')' : '-' }}
-                    </p>
+                    <p>{{ $user ? $user->nip_users . ' - ' . getKaryawan($user->nip) . ' ' . '(' . $user->email . ')' : '-' }}</p>
                 @else
                     <p>
                         {{ $user ? $user->nip_users . ' - ' . getKaryawan($user->nip) . ' ' . '(' . $user->email . ')' : '-' }}
@@ -109,175 +106,29 @@
                 @endif
             </div>
         </div>
-    @endforeach --}}
-
-
-    {{-- staff --}}
-    <div class="field-review">
+    @endforeach
+    {{-- <div class="field-review">
         <div class="field-name">
-            <label for="">Staf Analisa Kredit</label>
+            <label for="">Staf Analis Kredit</label>
         </div>
         <div class="field-answer">
-            @php
-                $avg_staf = $dataUmum->average_by_sistem;
-                if ($avg_staf > 0 && $avg_staf <= 2) {
-                    $status = 'merah';
-                } elseif ($avg_staf > 2 && $avg_staf <= 3) {
-                    $status = 'kuning';
-                } elseif ($avg_staf > 3) {
-                    $status = 'hijau';
-                } else {
-                    $status = 'merah';
-                }
-            @endphp
-            <p>
-                {{ $userLogStaff ? $userLogStaff->nip . ' - ' . getKaryawan($userLogStaff->nip) . ' ' . '(' . $userLogStaff->email . ')' : '-' }}
-                <span>Skor</span>
-                @if ($status == 'hijau')
-                    <span class="text-green-500">{{ $avg_staf }}</span>
-                @elseif ($status == 'kuning')
-                    <span class="text-yellow-500">{{ $avg_staf }}</span>
-                @elseif ($status == 'merah')
-                    <font class="text-red-500">
-                        {{ $avg_staf }}
-                    </font>
-                @else
-                    <font class="text-red-500">
-                        {{ $avg_staf }}
-                    </font>
-                @endif
-            </p>
+            <p>-</p>
         </div>
     </div>
-    {{-- Penyelia --}}
     <div class="field-review">
         <div class="field-name">
             <label for="">Penyelia Kredit</label>
         </div>
         <div class="field-answer">
-            @php
-                $avg_penyelia = $dataUmum->average_by_penyelia;
-                if ($avg_penyelia > 0 && $avg_penyelia <= 2) {
-                    $status = 'merah';
-                } elseif ($avg_penyelia > 2 && $avg_penyelia <= 3) {
-                    $status = 'kuning';
-                } elseif ($avg_penyelia > 3) {
-                    $status = 'hijau';
-                } else {
-                    $status = 'merah';
-                }
-            @endphp
-            <p>
-                {{ $userLogPenyelia ? $userLogPenyelia->nip . ' - ' . getKaryawan($userLogPenyelia->nip) . ' ' . '(' . $userLogPenyelia->email . ')' : '-' }}
-                <span>Skor</span>
-                @if ($status == 'hijau')
-                    <span class="text-green-500">{{ $avg_penyelia }}</span>
-                @elseif ($status == 'kuning')
-                    <span class="text-yellow-500">{{ $avg_penyelia }}</span>
-                @elseif ($status == 'merah')
-                    <font class="text-red-500">
-                        {{ $avg_penyelia }}
-                    </font>
-                @else
-                    <font class="text-red-500">
-                        {{ $avg_penyelia }}
-                    </font>
-                @endif
-            </p>
+            <p>-</p>
         </div>
     </div>
-    {{-- PBO --}}
-    @if ($userLogPBO)
-        <div class="field-review">
-            <div class="field-name">
-                <label for="">PBO</label>
-            </div>
-            <div class="field-answer">
-                @php
-                    $avg_pbo = $dataUmum->average_by_pbo ? $dataUmum->average_by_pbo : $dataUmum->average_by_penyelia;
-                    if ($avg_pbo > 0 && $avg_pbo <= 2) {
-                        $status = 'merah';
-                    } elseif ($avg_pbo > 2 && $avg_pbo <= 3) {
-                        $status = 'kuning';
-                    } elseif ($avg_pbo > 3) {
-                        $status = 'hijau';
-                    } else {
-                        $status = 'merah';
-                    }
-                @endphp
-                <p>
-                    {{ $userLogPBO ? $userLogPBO->nip . ' - ' . getKaryawan($userLogPBO->nip) . ' ' . '(' . $userLogPBO->email . ')' : '-' }}
-                    <span>Skor</span>
-                    @if ($status == 'hijau')
-                        <span class="text-green-500">{{ $avg_pbo }}</span>
-                    @elseif ($status == 'kuning')
-                        <span class="text-yellow-500">{{ $avg_pbo }}</span>
-                    @elseif ($status == 'merah')
-                        <font class="text-red-500">
-                            {{ $avg_pbo }}
-                        </font>
-                    @else
-                        <font class="text-red-500">
-                            {{ $avg_pbo }}
-                        </font>
-                    @endif
-                </p>
-            </div>
-        </div>
-    @endif
-    {{-- pbp --}}
-    @if ($userLogPBP)
-        <div class="field-review">
-            <div class="field-name">
-                <label for="">PBP</label>
-            </div>
-            <div class="field-answer">
-                @php
-                    $avg_pbp = null;
-                    if ($userLogPBO) {
-                        $avg_pbp = $dataUmum->average_by_pbp ? $dataUmum->average_by_pbp : $dataUmum->average_by_pbo;
-                    } else {
-                        $avg_pbp = $dataUmum->average_by_pbp ? $dataUmum->average_by_pbp : $dataUmum->average_by_penyelia;
-                    }
-
-                    if ($avg_pbp > 0 && $avg_pbp <= 2) {
-                        $status = 'merah';
-                    } elseif ($avg_pbp > 2 && $avg_pbp <= 3) {
-                        $status = 'kuning';
-                    } elseif ($avg_pbp > 3) {
-                        $status = 'hijau';
-                    } else {
-                        $status = 'merah';
-                    }
-                @endphp
-                <p>
-                    {{ $userLogPBP ? $userLogPBP->nip . ' - ' . getKaryawan($userLogPBP->nip) . ' ' . '(' . $userLogPBP->email . ')' : '-' }}
-                    <span>Skor</span>
-                    @if ($status == 'hijau')
-                        <span class="text-green-500">{{ $avg_pbp }}</span>
-                    @elseif ($status == 'kuning')
-                        <span class="text-yellow-500">{{ $avg_pbp }}</span>
-                    @elseif ($status == 'merah')
-                        <font class="text-red-500">
-                            {{ $avg_pbp }}
-                        </font>
-                    @else
-                        <font class="text-red-500">
-                            {{ $avg_pbp }}
-                        </font>
-                    @endif
-                </p>
-            </div>
-        </div>
-    @endif
-    {{-- pincab --}}
     <div class="field-review">
         <div class="field-name">
             <label for="">Pincab</label>
         </div>
         <div class="field-answer">
-            <p>{{ $userLogPincab ? $userLogPincab->nip . ' - ' . getKaryawan($userLogPincab->nip) . ' ' . '(' . $userLogPincab->email . ')' : '-' }}
-            </p>
+            <p>-</p>
         </div>
-    </div>
+    </div> --}}
 </div>

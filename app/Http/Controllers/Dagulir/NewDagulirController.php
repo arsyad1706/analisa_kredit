@@ -2915,8 +2915,12 @@ class NewDagulirController extends Controller
         $param['komentar'] = KomentarModel::where('id_pengajuan', $id)->first();
 
         $param['pendapat'] = $this->repo->getAlasanPengembalian($id, 'Proses Input Data');
+        if ($pengajuan->skema_kredit == 'Dagulir') {
+            return view('dagulir.pengajuan-kredit.edit', $param);
+        }else{
+            return view('dagulir.pengajuan-kredit.edit-skema', $param);
 
-        return view('dagulir.pengajuan-kredit.edit', $param);
+        }
     }
 
     public function update(Request $request, $id)
@@ -3890,7 +3894,11 @@ class NewDagulirController extends Controller
         }
         $param['jenis_usaha'] = config('dagulir.jenis_usaha');
         $param['tipe'] = config('dagulir.tipe_pengajuan');
-        return view('dagulir.pengajuan-kredit.continue-draft', $param);
+        if ($request->skema_kredit == 'Dagulir' || $request->skema_kredit == null) {
+            return view('dagulir.pengajuan-kredit.continue-draft', $param);
+        }else{
+            return view('dagulir.pengajuan-kredit.continue-draft-skema', $param);
+        }
     }
 
     public function tempDagulir(Request $request){
