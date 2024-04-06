@@ -634,6 +634,18 @@ $dataIndex = match ($skema) {
                                                             </div>
                                                         @endif
                                                     {{-- End --}}
+                                                    <div class="form-group">
+                                                        <div class="input-box">
+                                                            <label for="">{{ $item->nama }}</label>
+                                                            <input type="hidden" name="opsi_jawaban[{{ $item->id }}]"
+                                                                value="{{ $item->opsi_jawaban }}" id="">
+                                                            <input type="hidden" name="id_level[{{ $item->id }}]" value="{{ $item->id }}"
+                                                                id="">
+                                                            <input type="text" maxlength="255" name="informasi[{{ $item->id }}]"
+                                                                id="{{ $idLevelDua }}" placeholder="Masukkan informasi {{ $item->nama }}"
+                                                                class="form-input" value="{{ edit_text_dagulir($pengajuan->id, $item->id)?->opsi_text }}">
+                                                        </div>
+                                                    </div>
                                                 @else
                                                     @if ($item->nama == 'Omzet Penjualan' || $item->nama == 'Installment')
                                                         @if ($value->nama != 'Aspek Keuangan')
