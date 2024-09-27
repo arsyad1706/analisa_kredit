@@ -410,6 +410,17 @@
                     @endforeach
                 @endif
                 <div class="form-group col-md-12">
+                    <label for="">Pekerjaan</label>
+                    <input disabled type="text" name="pekerjaan"
+                        class="form-control @error('pekerjaan') is-invalid @enderror" id=""
+                        value="{{ old('pekerjaan', $dataUmumNasabah?->pekerjaan ?? '') }}" placeholder="Masukkan Pekerjaan">
+                    @error('pekerjaan')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                </div>
+                <div class="form-group col-md-12">
                     <label for="">Sektor Kredit</label>
                     <select disabled name="sektor_kredit" id=""
                         class="form-control @error('sektor_kredit') is-invalid @enderror select2">

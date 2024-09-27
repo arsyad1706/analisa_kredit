@@ -348,6 +348,23 @@ function getKaryawan($nip){
                     @endif
                     <hr>
                     <div class="form-group row">
+                        {{-- Pekerjaan --}}
+                        <label for="staticEmail" class="col-sm-3 col-form-label">Pekerjaan</label>
+                        <label for="staticEmail" class="col-sm-1 col-form-label px-0">
+                            <div class="d-flex justify-content-end">
+                                <div style="width: 20px">
+                                    :
+                                </div>
+                            </div>
+                        </label>
+                        <div class="col">
+                            <input type="hidden" readonly class="form-control-plaintext" id="staticEmail"
+                                value="{{ $dataNasabah?->pekerjaan ?? '-' }}">
+                            <p class="form-control-plaintext text-justify">{{ $dataNasabah?->pekerjaan ?? '-' }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
                         {{-- Tempat tanggal lahir --}}
                         <label for="staticEmail" class="col-sm-3 col-form-label">Tempat, Tanggal lahir/Status</label>
                         <label for="staticEmail" class="col-sm-1 col-form-label px-0">

@@ -326,14 +326,14 @@
                                                 class="dropdown-item">Tindak lanjut Review Penyelia</a>
                                             <a target="_blank" href="{{ route('cetak', $item->id_pengajuan) }}"
                                                 class="dropdown-item">Cetak</a>
-                                            @if ($item->skema_kredit == 'KKB')
+                                            {{-- @if ($item->skema_kredit == 'KKB')
                                                 <a target="_blank" href="{{ route('cetak-sppk', $item->id_pengajuan) }}"
                                                     class="dropdown-item">Cetak SPPK</a>
                                                 <a target="_blank" href="{{ route('cetak-po', $item->id_pengajuan) }}"
                                                     class="dropdown-item">Cetak PO</a>
                                                 <a target="_blank" href="{{ route('cetak-pk', $item->id_pengajuan) }}"
                                                     class="dropdown-item">Cetak PK</a>
-                                            @endif
+                                            @endif --}}
                                         @else
                                             <a target="_blank" href="{{ route('cetak', $item->id_pengajuan) }}"
                                                 class="dropdown-item">Cetak</a>
@@ -346,7 +346,7 @@
                                                 @if ($tglCetak?->tgl_cetak_sppk == null || $tglCetak == null)
                                                     <a target="_blank"
                                                         href="{{ route('cetak-sppk', $item->id_pengajuan) }}"
-                                                        class="dropdown-item">Cetak SPPK</a>
+                                                        class="dropdown-item" id="btnCetak">Cetak SPPK</a>
                                                 @elseif($tglCetak?->tgl_cetak_sppk != null && $item->sppk == null)
                                                     <a href="#" class="dropdown-item" data-toggle="modal"
                                                         data-id="{{ $item->id_pengajuan }}"
@@ -357,7 +357,7 @@
                                                 @if ($item->sppk != null && $tglCetak?->tgl_cetak_sppk != null && $tglCetak?->tgl_cetak_po == null)
                                                     <a target="_blank"
                                                         href="{{ route('cetak-po', $item->id_pengajuan) }}"
-                                                        class="dropdown-item">Cetak PO</a>
+                                                        class="dropdown-item" id="btnCetak">Cetak PO</a>
                                                 @elseif($item->sppk != null && $tglCetak?->tgl_cetak_po != null && $item->po == null)
                                                     <a href="#" class="dropdown-item" data-toggle="modal"
                                                         data-id="{{ $item->id_pengajuan }}"
@@ -368,7 +368,7 @@
                                                 @if ($item->po != null && $tglCetak?->tgl_cetak_po != null && $tglCetak?->tgl_cetak_pk == null)
                                                     <a target="_blank"
                                                         href="{{ route('cetak-pk', $item->id_pengajuan) }}"
-                                                        class="dropdown-item">Cetak PK</a>
+                                                        class="dropdown-item" id="btnCetak">Cetak PK</a>
                                                 @elseif($item->po != null && $tglCetak?->tgl_cetak_pk != null && $item->pk == null)
                                                     <a href="#" class="dropdown-item" data-toggle="modal"
                                                         data-id="{{ $item->id_pengajuan }}"
@@ -400,6 +400,16 @@
         <div class="pull-right">
         </div>
     </div>
+
+    <script>
+        $("#btnCetak").on("click", function(e){
+            e.preventDefault()
+            // Open new tab - in old browsers, it opens a popup window
+            window.open($(this).attr('href'), '_blank');
+            // reload current page
+            location.reload();
+        });
+    </script>
 @endsection
 @include('pengajuan-kredit.modal-filter')
 @include('pengajuan-kredit.modal.pilih-penyelia')

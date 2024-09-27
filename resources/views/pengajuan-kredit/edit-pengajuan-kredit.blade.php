@@ -291,6 +291,16 @@
                 </div>
                 <div class="" id="foto-ktp-nasabah">
                 </div>
+                <div class="form-group col-md-12">
+                    <label for="">Pekerjaan</label>
+                    <input type="text" maxlength="255" name="pekerjaan" class="form-control @error('pekerjaan') is-invalid @enderror"
+                        id="pekerjaan" placeholder="Masukkan Pekerjaan" value="{{ $dataUmum?->pekerjaan ?? '' }}">
+                    @error('pekerjaan')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
+                </div>
                 <div class="form-group col-md-4">
                     <label for="">Tempat</label>
                     <input type="text" name="tempat_lahir" maxlength="255" id=""
